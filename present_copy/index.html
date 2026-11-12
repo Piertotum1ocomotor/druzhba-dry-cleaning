@@ -1,0 +1,134 @@
+<!doctype html><html><head><title> Сайт в разработке </title><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><meta name="viewport" content="width=device-width" /><script src="/druzhba-dry-cleaning/_s/build/theme/4/_viewport.js"></script><script>
+      if (window.parent !== window) {
+        const locationChangeMessage = () => {
+          window.parent.postMessage(
+            {
+              message: 'LOCATION_CHANGE',
+              payload: {
+                title: document.title,
+                location: window.location.toString(),
+              },
+            },
+            '*',
+          )
+        }
+
+        window.addEventListener('hashchange', locationChangeMessage)
+        window.addEventListener('popstate', locationChangeMessage)
+        window.addEventListener('load', locationChangeMessage)
+      }
+    </script><meta name="robots" content="none" /><base target="_top" /><link rel="icon" href="/druzhba-dry-cleaning/_s/images/favicon.png?3" type="image/png" /><link href="/druzhba-dry-cleaning/_s/build/land_font.css?95ca65b8" rel="stylesheet" type="text/css" /><link href="/druzhba-dry-cleaning/_s/build/auth.css?95ca65b8" media="all" rel="stylesheet" type="text/css" /></head><body><!--googleoff: all--><!-- noindex --><div class="site-locked"><div class="logo-outer"><a class="logo" href="https://flexbe.ru/?utm_source=clients&utm_campaign=site_locked"><svg width="82" height="28"><use xlink:href="/druzhba-dry-cleaning/_s/images/auth/auth.svg?95ca65b8#flexbe" /></svg></a></div><div class="content"><img class="icon" src="/druzhba-dry-cleaning/_s/images/emoji/progger_girl_1.png" /><div class="title">Сайт в разработке</div><div class="desc">Наш сайт находится в разработке и
+скоро будет открыт для всех.</div><hr class="hr" /><form class="form" action="#" novalidate id="code_form"><div class="label">Для просмотра введите код</div><div class="input-wrap"><input id="code_input" type="number" placeholder="123456" /><div class="error-tip">Неверный код</div><button id="code_submit" type="submit"><svg class="icon"><use href="/druzhba-dry-cleaning/_s/images/auth/auth.svg?95ca65b8#arrow" /></svg><svg class="loader circular-loader infinite" viewBox="25 25 50 50"><circle class="circular-loader__path" cx="50" cy="50" r="19"></circle></svg></button></div></form><div class="desc caption"><span>Код доступа вы можете получить в разделе</span><a class="breadcrumbs" href="https://app.flexbe.com/project/378840/settings/general/" class="link"
+        >Настройки › Общие</a
+      ></div></div><div class="footer"></div></div><!-- /noindex --><!--googleon: all--><script type="text/javascript">
+  'use strict'
+  ;(function () {
+    history.scrollRestoration = 'manual'
+
+    var form = document.getElementById('code_form')
+    var input = document.getElementById('code_input')
+    var submit = document.getElementById('code_submit')
+    var code = getCookie('f_access_code')
+    input.focus()
+
+    if (code) {
+      input.value = code
+      form.classList.add('error')
+      unsetCookie('f_access_code')
+    }
+
+    var p = false
+    var keyCodes = [8, 13, 17, 34, 35, 36, 37, 38, 39, 40, 46]
+    var validationTimeout = false
+
+    input.onkeydown = function (e) {
+      var value = ''.concat(e.target.value)
+
+      if (value.length >= 6 && !keyCodes.includes(e.keyCode) && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault()
+      }
+
+      if (!/^\d{1,1}$/.test(e.key) && !keyCodes.includes(e.keyCode) && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault()
+      }
+    }
+
+    input.oninput = function (e) {
+      var value = ''.concat(e.target.value)
+
+      form.classList.remove('error')
+
+      if (value.length === 6 && !keyCodes.includes(e.keyCode) && !e.ctrlKey && !e.metaKey) {
+        setTimeout(function () {
+          checkCode()
+        }, 0)
+      }
+    }
+
+    input.onpaste = function (e) {
+      setTimeout(function () {
+        checkCode()
+      }, 0)
+    }
+
+    form.onsubmit = function (e) {
+      e.preventDefault()
+      checkCode()
+    }
+
+    function checkCode(paste) {
+      if (validationTimeout) {
+        clearTimeout(validationTimeout)
+      }
+
+      validationTimeout = setTimeout(function () {
+        var s = ''.concat(input.value)
+        if (p || !s.length) {
+          form.classList.add('error')
+          return false
+        }
+
+        p = true
+        form.classList.remove('error')
+        setCookie('f_access_code', s, 365)
+        submit.classList.add('pending')
+        window.scrollTo(0, 0)
+
+        window.location.reload()
+      }, 200)
+    }
+
+    function setCookie(cname, cvalue, exdays) {
+      var d = new Date()
+      d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000)
+      var expires = 'expires='.concat(d.toUTCString())
+      const secure = location.protocol === 'https:' ? ';SameSite=None;Secure' : ''
+
+      document.cookie = ''.concat(cname, '=').concat(cvalue, ';').concat(expires, ';path=/', secure)
+    }
+
+    function unsetCookie(cname) {
+      document.cookie = cname + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;'
+    }
+
+    function getCookie(cname) {
+      var name = ''.concat(cname, '=')
+      var decodedCookie = decodeURIComponent(document.cookie)
+      var ca = decodedCookie.split(';')
+
+      for (var i = 0; i < ca.length; i++) {
+        var c = ca[i]
+
+        while (c.charAt(0) === ' ') {
+          c = c.substring(1)
+        }
+
+        if (c.indexOf(name) === 0) {
+          return c.substring(name.length, c.length)
+        }
+      }
+
+      return false
+    }
+  })()
+</script></body></html>

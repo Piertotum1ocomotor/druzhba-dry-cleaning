@@ -1,0 +1,8 @@
+<!-- Copyright (c) Tabler Icons by Paweł Kuna, licensed under MIT License. -->
+<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-circle-chevron-down" viewBox="0 0 24 24" id="icon">
+  <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="stroke-width: var(--stroke, 2);">
+    <path xmlns="http://www.w3.org/2000/svg" stroke="none" d="M0 0h24v24H0z" />
+    <path xmlns="http://www.w3.org/2000/svg" d="m15 11-3 3-3-3" />
+    <path xmlns="http://www.w3.org/2000/svg" d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z" />
+  </g>
+</svg>

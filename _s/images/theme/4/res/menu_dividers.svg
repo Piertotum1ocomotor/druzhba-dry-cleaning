@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12" width="12" height="12">
+    <style>
+        g { display: none }
+        g:target { display: inline }
+    </style>
+
+    <g id="vertical-slash-light">
+        <path d="M6 12L6 0" stroke="currentColor" stroke-width="1" stroke-linejoin="round"/>
+    </g>
+
+    <g id="vertical-slash-regular">
+        <path d="M6 12L6 0" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+    </g>
+
+    <g id="vertical-slash-bold">
+        <path d="M6 12L6 0" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
+    </g>
+
+
+    <g id="circle-light">
+        <circle cx="6" cy="6" r="4" fill="currentColor"/>
+    </g>
+
+    <g id="circle-regular">
+        <circle cx="6" cy="6" r="4" fill="currentColor"/>
+    </g>
+
+    <g id="circle-bold">
+        <circle cx="6" cy="6" r="4" fill="currentColor"/>
+    </g>
+
+
+    <g clip-path="url(#slash-light-clip)" id="slash-light">
+        <path d="M11 -5L1 15" stroke="currentColor" stroke-width="1" stroke-linecap="square" stroke-linejoin="round"/>
+    </g>
+    <defs>
+        <clipPath id="slash-light-clip">
+            <rect width="12" height="12"/>
+        </clipPath>
+    </defs>
+
+    <g clip-path="url(#slash-regular-clip)" id="slash-regular">
+        <path d="M11 -5L1 15" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="round"/>
+    </g>
+    <defs>
+        <clipPath id="slash-regular-clip">
+            <rect width="12" height="12"/>
+        </clipPath>
+    </defs>
+
+    <g clip-path="url(#slash-bold-clip)" id="slash-bold">
+        <path d="M11 -5L1 15" stroke="currentColor" stroke-width="3" stroke-linecap="square" stroke-linejoin="round"/>
+    </g>
+    <defs>
+        <clipPath id="slash-bold-clip">
+            <rect width="12" height="12"/>
+        </clipPath>
+    </defs>
+
+
+    <g fill="none" id="arrow-light">
+        <path d="M4 1L9 6L4 11" stroke="currentColor" stroke-width="1"/>
+    </g>
+
+    <g fill="none" id="arrow-regular">
+        <path d="M4 1L9 6L4 11" stroke="currentColor" stroke-width="2"/>
+    </g>
+
+    <g fill="none" id="arrow-bold">
+        <path d="M4 1L9 6L4 11" stroke="currentColor" stroke-width="3"/>
+    </g>
+
+    <g fill="none" id="line-light">
+        <path d="M1.00005 5.99994L11 5.99994" stroke="currentColor" stroke-width="1" stroke-linejoin="round"/>
+    </g>
+
+    <g fill="none" id="line-regular">
+        <path d="M1.00005 5.99994L11 5.99994" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+    </g>
+
+    <g fill="none" id="line-bold">
+        <path d="M1.00005 5.99994L11 5.99994" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
+    </g>
+</svg>

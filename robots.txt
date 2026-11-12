@@ -1,0 +1,75 @@
+User-agent: *
+Allow: /*.js$
+Allow: /*.css$
+Allow: /*.jpg$
+Allow: /*.gif$
+Allow: /*.png$
+Disallow: /admin/
+Disallow: /login/
+Disallow: /account/
+Disallow: /user/
+Disallow: /users/
+Disallow: /system/
+Disallow: /api/
+Disallow: /ajax/
+Disallow: /assets/
+Disallow: /static/
+Disallow: /uploads/
+Disallow: /*?*
+Disallow: /*&*
+Disallow: /outerwear_new
+
+User-agent: Yandex
+Allow: /*.js$
+Allow: /*.css$
+Allow: /*.jpg$
+Allow: /*.gif$
+Allow: /*.png$
+Disallow: /admin/
+Disallow: /login/
+Disallow: /account/
+Disallow: /user/
+Disallow: /users/
+Disallow: /system/
+Disallow: /api/
+Disallow: /ajax/
+Disallow: /assets/
+Disallow: /static/
+Disallow: /uploads/
+Disallow: /*?*
+Disallow: /*&*
+Disallow: /?etext=
+Disallow: /outerwear_new
+Clean-param: etext&yclid&yadclid&yadordid&yandex-source&ved&ybaip&yprqee&rb_clickid&erid /
+Clean-param: pay_id&pay_status&h&rs&ctime /
+Clean-param: utm_source&utm_medium&utm_campaign&utm_term&utm_content&utm_s1ource&amp;utm_medium&amp;utm_campaign&amp;etext&amp;yclid /
+Clean-param: _ym_debug&gtm_latency&__pf__&hhtmFrom /
+
+
+
+User-agent: Googlebot
+Allow: /*.js$
+Allow: /*.css$
+Allow: /*.jpg$
+Allow: /*.gif$
+Allow: /*.png$
+Disallow: /admin/
+Disallow: /login/
+Disallow: /account/
+Disallow: /user/
+Disallow: /users/
+Disallow: /system/
+Disallow: /api/
+Disallow: /ajax/
+Disallow: /assets/
+Disallow: /static/
+Disallow: /uploads/
+Disallow: /*?*
+Disallow: /*&*
+Disallow: /outerwear_new
+
+
+Host: https://xn--80aaclkjaqq8bhmrs6a.xn--p1ai/
+
+
+Sitemap: https://xn--80aaclkjaqq8bhmrs6a.xn--p1ai/sitemap.xml
