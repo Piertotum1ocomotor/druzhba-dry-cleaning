@@ -3,21 +3,38 @@
 
   const draftKey = 'druzhba_checkout_v1';
   const contactsKey = 'druzhba_checkout_contacts_v1';
-  const money = new Intl.NumberFormat('ru-RU', {style: 'currency', currency: 'RUB', maximumFractionDigits: 2});
-  const initialDraft = {payment: 'cash', pickup: {mode: 'phone', address: '', date: '', window: 'any'}};
+  const money = new Intl.NumberFormat('ru-RU', {style: 'currency', currency: 'RUB', minimumFractionDigits: 0, maximumFractionDigits: 2});
+  const initialDraft = {payment: 'cash', pickup: {mode: 'phone', address: '', date: '', window: 'any'},
+    address_details: {apartment: '', entrance: '', floor: '', intercom: '', meet_outside: false},
+    return: {mode: 'phone', date: '', window: 'any'}, comment: ''};
+  const base = locationPath().startsWith('/druzhba-dry-cleaning/') ? '/druzhba-dry-cleaning' : '';
+  const isCheckout = locationPath().replace(/\/$/, '') === base + '/checkout';
+  let checkoutForm;
+  let nativeForm;
+  function locationPath() { return typeof location === 'undefined' ? '' : location.pathname; }
+  function route(path) { return base + path; }
+  function imagePath(value) {
+    const url = typeof value === 'object' && value ? '/img/' + value.id + '.' + value.ext : String(value || '');
+    return url.startsWith('/img/') ? route(url) : url;
+  }
   let options;
   let selector;
   let activeCategory = '';
   let search = '';
   let returnFocus;
   let returnToCart = false;
-  let draft = initialDraft;
+  let draft = JSON.parse(JSON.stringify(initialDraft));
 
   try {
-    const saved = JSON.parse(localStorage.getItem(draftKey));
+    const stored = sessionStorage.getItem(draftKey) || localStorage.getItem(draftKey);
+    const saved = JSON.parse(stored);
     if (saved && saved.pickup && ['cash', 'online', 'manager'].includes(saved.payment)) {
-      draft = saved;
+      draft = {...initialDraft, ...saved, pickup: {...initialDraft.pickup, ...saved.pickup},
+        address_details: {...initialDraft.address_details, ...saved.address_details}, return: {...initialDraft.return, ...saved.return}};
+      if (draft.payment === 'online') draft.payment = 'cash';
+      sessionStorage.setItem(draftKey, JSON.stringify(draft));
     }
+    localStorage.removeItem(draftKey);
   } catch (_) {}
 
   function escape(value) {
@@ -72,6 +89,17 @@
   function restoreCartImages() {
     let changed = false;
     const updated = items().map(item => {
+      // Native storage serializes its unlimited Infinity quantity as JSON null.
+      // Restore only known native variants from the catalog, preserving finite stock and unknown items.
+      if (item.type === 'product' && item.quantity == null) {
+        const product = productFor(item);
+        const variant = product?.variants.find(variant => variant.id === Number(item.variantId))
+          || (product?.variants.length === 1 ? product.variants[0] : null);
+        if (typeof variant?.quantity === 'number' && Number.isFinite(variant.quantity) && variant.quantity >= -1) {
+          item = {...item, quantity: variant.quantity};
+          changed = true;
+        }
+      }
       if (item.img) return item;
       const img = imageForCartItem(item);
       if (!img) return item;
@@ -98,23 +126,31 @@
     return items().some(item => estimateReason(item));
   }
 
+  function unknownMeasure() {
+    return items().some(item => item.count && !item.hidden && estimateReason(item) === 'measure' && !item.druzhba_dimensions);
+  }
+
   function draftFrom(form) {
     const root = form.querySelector('.dr-checkout');
     if (!root) return null;
+    const value = selector => root.querySelector(selector).value.trim();
     return {
-      payment: root.querySelector('[data-payment]:checked')?.value || 'cash',
-      pickup: {
-        mode: root.querySelector('[data-pickup-mode]').value,
-        address: root.querySelector('[data-pickup-address]').value.trim(),
-        date: root.querySelector('[data-pickup-date]').value,
-        window: root.querySelector('[data-pickup-window]').value,
-      },
+      payment: ['cash', 'manager'].includes(root.querySelector('[data-payment]:checked')?.value)
+        ? root.querySelector('[data-payment]:checked').value : 'cash',
+      pickup: {mode: root.querySelector('[data-pickup-requested]').checked ? 'requested' : 'phone',
+        address: value('[data-pickup-address]'), date: value('[data-pickup-date]'), window: value('[data-pickup-window]')},
+      address_details: {apartment: value('[data-apartment]'), entrance: value('[data-entrance]'),
+        floor: value('[data-floor]'), intercom: value('[data-intercom]'), meet_outside: root.querySelector('[data-meet-outside]').checked},
+      return: {mode: root.querySelector('[data-return-requested]').checked ? 'requested' : 'phone',
+        date: value('[data-return-date]'), window: value('[data-return-window]')},
+      comment: value('[data-order-comment]'),
     };
   }
 
   function saveDraft(form) {
-    draft = draftFrom(form);
-    try { localStorage.setItem(draftKey, JSON.stringify(draft)); } catch (_) {}
+    const value = draftFrom(form);
+    if (value) draft = value;
+    try { sessionStorage.setItem(draftKey, JSON.stringify(draft)); } catch (_) {}
   }
 
   function contactControls(form) {
@@ -145,10 +181,16 @@
 
   function applyDraft(form) {
     const panel = form.querySelector('.dr-checkout');
-    panel.querySelector('[data-pickup-mode]').value = draft.pickup.mode === 'requested' ? 'requested' : 'phone';
-    panel.querySelector('[data-pickup-address]').value = draft.pickup.address || '';
-    panel.querySelector('[data-pickup-date]').value = draft.pickup.date || '';
-    panel.querySelector('[data-pickup-window]').value = draft.pickup.window || 'any';
+    panel.querySelector('[data-pickup-requested]').checked = draft.pickup.mode === 'requested';
+    panel.querySelector('[data-return-requested]').checked = draft.return.mode === 'requested';
+    panel.querySelector('[data-meet-outside]').checked = Boolean(draft.address_details.meet_outside);
+    for (const [selector, value] of Object.entries({
+      '[data-pickup-address]': draft.pickup.address, '[data-pickup-date]': draft.pickup.date,
+      '[data-pickup-window]': draft.pickup.window, '[data-return-date]': draft.return.date,
+      '[data-return-window]': draft.return.window, '[data-order-comment]': draft.comment,
+      ...Object.fromEntries(['apartment', 'entrance', 'floor', 'intercom'].map(key => ['[data-' + key + ']', draft.address_details[key]])),
+    })) panel.querySelector(selector).value = value || (selector.includes('window') ? 'any' : '');
+    panel.querySelector('details').open = Boolean(draft.comment);
     for (const input of panel.querySelectorAll('[data-payment]')) input.checked = input.value === draft.payment;
     refreshForm(form);
   }
@@ -166,30 +208,20 @@
     if (!root || !options) return;
     const value = draftFrom(form);
     const requested = value.pickup.mode === 'requested';
-    root.querySelector('[data-pickup-details]').hidden = !requested;
-    for (const control of root.querySelectorAll('[data-pickup-address], [data-pickup-date]')) {
-      control.required = requested;
-      control.disabled = !requested;
+    root.querySelector('[data-pickup-address]').required = requested;
+    root.querySelector('[data-pickup-address]').minLength = requested ? 5 : 0;
+    for (const kind of ['pickup', 'return']) {
+      const selected = value[kind].mode === 'requested';
+      root.querySelector('[data-' + kind + '-date]').required = selected;
+      for (const control of root.querySelectorAll('[data-' + kind + '-date], [data-' + kind + '-window]')) control.disabled = !selected;
     }
-    root.querySelector('[data-pickup-window]').disabled = !requested;
-    const estimate = provisional();
-    const status = root.querySelector('[data-checkout-note]');
-    const online = root.querySelector('[data-payment][value="online"]');
-    online.disabled = !options.onlineAvailable && !estimate;
-    if (estimate) {
-      status.textContent = 'Стоимость предварительная. Итоговую сумму согласуем после приёмки вещей. Способ оплаты сохраним, сейчас списания не будет.';
-    } else if (!options.onlineAvailable) {
-      status.textContent = '';
-    } else {
-      status.textContent = value.payment === 'online' ? 'После оформления вы перейдёте к оплате на странице Т-Банка.' : '';
-    }
-    status.hidden = !status.textContent;
-    const buttonLabel = form.querySelector('.form-button .btn-text, .form-button .text');
-    if (buttonLabel) {
-      buttonLabel.textContent = estimate ? 'Отправить на согласование' : value.payment === 'online' ? 'Перейти к оплате' : 'Отправить заказ';
-    }
-    const totalLabel = form.closest('.widget-cart')?.querySelector('.cart-checkout-summary__text p');
-    if (totalLabel) totalLabel.textContent = estimate ? 'Предварительно от' : 'Итого';
+    root.querySelector('[data-return-date]').min = requested && value.pickup.date ? value.pickup.date : options.today;
+    const outside = value.address_details.meet_outside;
+    root.querySelector('[data-address-details]').hidden = outside;
+    for (const input of root.querySelectorAll('[data-address-details] input')) input.disabled = outside;
+    const buttonLabel = form.querySelector('.form-submit .form-button .btn-text');
+    if (buttonLabel) buttonLabel.textContent = 'Отправить заказ';
+    updateOrderCard();
   }
 
   function enhanceForm(form) {
@@ -197,61 +229,183 @@
     const panel = document.createElement('div');
     panel.className = 'dr-checkout';
     const windows = Object.entries(options.windows).map(([value, label]) => `<option value="${escape(value)}">${escape(label)}</option>`).join('');
+    const dates = kind => `<div class="dr-field-row dr-date-row">
+      <label class="dr-field">Желаемая дата<input data-${kind}-date type="date" min="${options.today}" max="${options.maxDate}"></label>
+      <label class="dr-field">Интервал времени<select data-${kind}-window>${windows}</select></label></div>`;
     panel.innerHTML = `
-      <button class="dr-text-button" type="button" data-add-items>Добавить вещи</button>
-      <fieldset class="dr-fieldset">
-        <legend>Вывоз вещей</legend>
-        <label class="dr-field">Дата и время вывоза
-          <select data-pickup-mode>
-            <option value="phone">Согласовать по телефону</option>
-            <option value="requested">Указать адрес и удобное время</option>
-          </select>
-        </label>
-        <div data-pickup-details hidden>
-          <label class="dr-field">Адрес вывоза
-            <input data-pickup-address type="text" autocomplete="street-address" maxlength="500" placeholder="Улица, дом, квартира, подъезд">
-          </label>
-          <div class="dr-field-row">
-            <label class="dr-field">Желаемая дата
-              <input data-pickup-date type="date" min="${options.today}" max="${options.maxDate}">
-            </label>
-            <label class="dr-field">Удобное время
-              <select data-pickup-window>${windows}</select>
-            </label>
-          </div>
-          <p class="dr-help">Менеджер подтвердит время вывоза.</p>
+      <section class="dr-section"><h2>Адрес</h2><p class="dr-help">Заберём вещи и привезём их обратно по этому адресу.</p>
+        <label class="dr-field">Улица и дом<input data-pickup-address type="text" autocomplete="street-address" maxlength="500" placeholder="Екатеринбург, улица, дом"></label>
+        <div class="dr-address-details" data-address-details>
+          ${[['apartment', 'Квартира / офис'], ['entrance', 'Подъезд'], ['floor', 'Этаж'], ['intercom', 'Домофон']].map(([key, label]) => `<label class="dr-field">${label}<input data-${key} type="text" maxlength="80" autocomplete="off"></label>`).join('')}
         </div>
-      </fieldset>
-      <fieldset class="dr-fieldset">
-        <legend>Способ оплаты</legend>
-        <label class="dr-radio"><input data-payment type="radio" value="online"><span>Онлайн через Т-Банк</span></label>
+        <label class="dr-check"><input data-meet-outside type="checkbox"><span>Встречу курьера на улице</span></label>
+        <details class="dr-comment"><summary>Добавить комментарий к заказу / проходу</summary>
+          <label class="dr-field">Комментарий<textarea data-order-comment maxlength="1000" rows="3" placeholder="Например, как найти вход или что важно знать о вещах"></textarea></label>
+        </details>
+      </section>
+      <section class="dr-section"><h2>Когда забрать вещи</h2>
+        <label class="dr-check"><input data-pickup-requested type="checkbox"><span>Выбрать желаемые дату и время</span></label>
+        ${dates('pickup')}<p class="dr-help">Без выбранной даты согласуем вывоз по телефону.</p>
+      </section>
+      <section class="dr-section"><h2>Когда вернуть вещи</h2>
+        <label class="dr-check"><input data-return-requested type="checkbox"><span>Указать пожелание по возврату</span></label>
+        ${dates('return')}<p class="dr-help">По умолчанию дату возврата согласуем с менеджером.</p>
+        <p class="dr-date-note">Мы свяжемся с вами и согласуем удобное время вывоза и доставки</p>
+      </section>
+      <section class="dr-section"><h2>Способ оплаты</h2>
         <label class="dr-radio"><input data-payment type="radio" value="cash"><span>Наличными курьеру</span></label>
         <label class="dr-radio"><input data-payment type="radio" value="manager"><span>Согласовать с менеджером</span></label>
-      </fieldset>
-      <p class="dr-help" data-checkout-note hidden></p>
+      </section>
       <p class="dr-error" data-checkout-error role="alert" hidden></p>`;
-    const formId = 'dr-payment-' + document.querySelectorAll('.dr-checkout').length;
-    for (const input of panel.querySelectorAll('[data-payment]')) input.name = formId;
-    const submit = form.querySelector('.form-submit');
-    form.insertBefore(panel, submit);
+    for (const input of panel.querySelectorAll('[data-payment]')) input.name = 'dr-payment';
+    form.insertBefore(panel, form.querySelector('.form-submit'));
     applyDraft(form);
     restoreContacts(form);
-    form.addEventListener('input', event => {
+    for (const event of ['input', 'change']) form.addEventListener(event, event => {
       if (contactControls(form).includes(event.target)) saveContacts(form);
-    });
-    form.addEventListener('change', event => {
-      if (contactControls(form).includes(event.target)) saveContacts(form);
-    });
-    form.addEventListener('reset', () => setTimeout(() => applyDraft(form), 0));
-    panel.querySelector('[data-add-items]').addEventListener('click', openSelector);
-    for (const event of ['input', 'change']) {
-      panel.addEventListener(event, () => {
+      if (panel.contains(event.target)) {
         showError(form, '');
         saveDraft(form);
         refreshForm(form);
-      });
-    }
+      }
+    });
+    // Native success resets the form; restore only after the confirmed success handler clears the draft.
+    form.addEventListener('reset', () => setTimeout(() => { applyDraft(form); restoreContacts(form); }, 0));
     refreshForm(form);
+  }
+
+  function goCheckout() {
+    if (checkoutForm) { saveDraft(checkoutForm); saveContacts(checkoutForm); }
+    location.href = route('/checkout/');
+  }
+
+  function installReview() {
+    const widget = document.querySelector('.widget-cart');
+    if (!widget || widget.querySelector('.dr-review-actions')) return;
+    widget.classList.add('dr-cart-review');
+    const actions = document.createElement('div');
+    actions.className = 'dr-review-actions';
+    actions.innerHTML = `<p class="dr-help" data-review-estimate hidden>Точную стоимость подтвердим с вами до начала чистки</p>
+      <p class="dr-help">Доставка — согласуем с вами</p><div class="dr-review-buttons"><button class="dr-secondary" type="button" data-add-items>Добавить вещи</button><button class="dr-primary" type="button" data-go-checkout>Перейти к оформлению</button></div>`;
+    widget.querySelector('.cart-container').append(actions);
+    actions.querySelector('[data-add-items]').addEventListener('click', openSelector);
+    actions.querySelector('[data-go-checkout]').addEventListener('click', goCheckout);
+    updateReview();
+  }
+
+  function updateReview() {
+    const widget = document.querySelector('.dr-cart-review');
+    if (!widget) return;
+    const estimate = provisional();
+    const label = widget.querySelector('.cart-checkout-summary__text p');
+    if (label) label.textContent = estimate ? 'Предварительная стоимость' : 'Стоимость услуг';
+    const summary = widget.querySelector('.cart-checkout-summary');
+    let total = summary?.querySelector('[data-review-total]');
+    if (summary && !total) {
+      total = document.createElement('strong');
+      total.dataset.reviewTotal = '';
+      summary.append(total);
+    }
+    if (total) total.textContent = unknownMeasure() ? 'Стоимость уточним' : money.format(items().reduce((sum, item) => sum + (item.hidden ? 0 : Number(item.price) * Number(item.count)), 0));
+    widget.querySelector('[data-review-estimate]').hidden = !estimate;
+    widget.querySelector('[data-go-checkout]').disabled = !items().some(item => item.count && !item.hidden);
+    for (const row of widget.querySelectorAll('.order-item')) {
+      const item = items().find(item => item.id === row.dataset.id);
+      if (!item || !estimateReason(item) || row.querySelector('.dr-item-estimate')) continue;
+      if (estimateReason(item) === 'measure' && !item.druzhba_dimensions) {
+        const price = row.querySelector('.cart-sum');
+        if (price) price.textContent = money.format(Number(item.price)) + ' / м²';
+        const each = row.querySelector('.cart-price');
+        if (each) each.hidden = true;
+      }
+      const note = document.createElement('small');
+      note.className = 'dr-item-estimate';
+      note.textContent = estimateReason(item) === 'measure' && !item.druzhba_dimensions ? 'Тариф за м² · размер уточним' : 'Предварительная стоимость';
+      row.querySelector('.item-title')?.append(note);
+    }
+  }
+
+  function updateOrderCard() {
+    if (!checkoutForm) return;
+    const list = items().filter(item => item.count && !item.hidden);
+    const total = list.reduce((sum, item) => sum + Math.round(Number(item.price) * 100) * Number(item.count), 0) / 100;
+    const count = list.reduce((sum, item) => sum + Number(item.count), 0);
+    const estimate = provisional();
+    const card = checkoutForm.querySelector('.dr-order-card');
+    if (!card) return;
+    card.querySelector('[data-order-items]').innerHTML = list.map(item => `<li class="dr-order-item" data-item-id="${escape(item.id)}">
+      ${item.img ? `<img src="${escape(imagePath(item.img))}" alt="" width="60" height="60">` : '<span class="dr-item-placeholder" aria-hidden="true"></span>'}
+      <div class="dr-order-item-body"><strong>${escape(item.title)}</strong>${estimateReason(item) ? `<small>${estimateReason(item) === 'measure' && !item.druzhba_dimensions ? 'Тариф за м² · размер уточним' : 'Предварительно'}</small>` : ''}
+        <div class="dr-item-controls"><div class="dr-quantity"><button type="button" data-count-change="-1" aria-label="Уменьшить количество: ${escape(item.title)}">−</button><span aria-label="Количество">${Number(item.count)}</span><button type="button" data-count-change="1" aria-label="Увеличить количество: ${escape(item.title)}" ${Number(item.count) >= 100 ? 'disabled' : ''}>+</button></div>
+        <span>${estimateReason(item) === 'measure' && !item.druzhba_dimensions ? money.format(Number(item.price)) + ' / м²' : money.format(Number(item.price) * Number(item.count))}</span></div><button class="dr-remove" type="button" data-remove-item>Удалить</button></div></li>`).join('');
+    card.querySelector('[data-order-empty]').hidden = Boolean(count);
+    card.querySelector('[data-services-label]').textContent = estimate ? 'Предварительная стоимость' : 'Стоимость услуг';
+    card.querySelector('[data-services-total]').textContent = unknownMeasure() ? 'Стоимость уточним' : money.format(total);
+    card.querySelector('[data-order-estimate]').hidden = !estimate;
+    const compact = document.querySelector('[data-compact-summary]');
+    if (compact) compact.textContent = `${count ? 'Вещей: ' + count : 'Корзина пуста'} · ${unknownMeasure() ? 'стоимость уточним' : (estimate ? 'предварительно ' : 'услуги ') + money.format(total)}`;
+    const button = card.querySelector('.form-submit .form-button');
+    if (button) button.disabled = !count;
+    if (nativeForm) {
+      if (count && total >= 10) nativeForm.enableSubmit();
+      else nativeForm.disableSubmit(count ? 'Минимальная стоимость услуг — 10 ₽' : 'Добавьте вещи в заказ');
+    }
+    updateReview();
+  }
+
+  async function mountCheckout() {
+    const holder = document.querySelector('[data-checkout-holder]');
+    const form = document.querySelector('.widget-cart form[data-cart]');
+    if (!holder || !form) return;
+    // Opening once lets the native cart create its form instance and attach its existing submit hooks.
+    await window.flexbe_cli.events.trigger('ui_cart_open');
+    nativeForm = window.flexbe_cli.components.initComponent(form, 'init');
+    await window.flexbe_cli.events.trigger('ui_cart_close');
+    checkoutForm = form;
+    enhanceForm(form);
+    form.classList.add('dr-order-form');
+    const main = document.createElement('div');
+    main.className = 'dr-form-main';
+    const contacts = document.createElement('section');
+    contacts.className = 'dr-section dr-contact-section';
+    contacts.innerHTML = '<h2>Ваши контакты</h2>';
+    contacts.append(form.querySelector('.form-fields'));
+    contacts.querySelector('input[type="text"]').autocomplete = 'name';
+    contacts.querySelector('input[type="tel"]').autocomplete = 'tel';
+    main.append(contacts, form.querySelector('.dr-checkout'));
+    const card = document.createElement('aside');
+    card.className = 'dr-order-card';
+    card.setAttribute('aria-label', 'Состав и стоимость заказа');
+    card.innerHTML = `<div class="dr-card-title"><h2>Ваш заказ</h2><button class="dr-text-button" type="button" data-add-items>Добавить вещи</button></div>
+      <ul class="dr-order-items" data-order-items></ul><p data-order-empty hidden>В заказе пока нет вещей. Добавьте их, чтобы продолжить.</p>
+      <div class="dr-cost-line"><span data-services-label>Стоимость услуг</span><strong data-services-total></strong></div>
+      <div class="dr-delivery-line"><span>Доставка</span><span>Согласуем с вами</span></div>
+      <p class="dr-help">Бесплатно по Екатеринбургу от 1 500 ₽, в города-спутники — от 4 000 ₽</p>
+      <p class="dr-help" data-order-estimate hidden>Точную стоимость подтвердим с вами до начала чистки</p>`;
+    card.append(form.querySelector('.form-submit'), form.querySelector('.captcha-global-error'), form.querySelector('.policy-data-warning'));
+    form.append(main, card);
+    holder.replaceChildren(form);
+    card.querySelector('[data-add-items]').addEventListener('click', openSelector);
+    card.addEventListener('click', event => {
+      const button = event.target.closest('[data-count-change], [data-remove-item]');
+      if (!button) return;
+      const row = button.closest('[data-item-id]');
+      const list = items();
+      const item = list.find(item => item.id === row.dataset.itemId);
+      if (!item) return;
+      const count = button.hasAttribute('data-remove-item') ? 0 : Math.max(0, Math.min(100, Number(item.count) + Number(button.dataset.countChange)));
+      const next = list.filter(candidate => candidate.id !== item.id || count > 0).map(candidate => candidate.id === item.id ? {...candidate, count} : candidate);
+      cartStore().dispatch('updateList', next);
+      // Restore keyboard focus after the changed list is rendered.
+      const changedRow = Array.from(card.querySelectorAll('[data-item-id]')).find(row => row.dataset.itemId === item.id);
+      (changedRow?.querySelector(button.hasAttribute('data-remove-item') ? '[data-remove-item]' : `[data-count-change="${button.dataset.countChange}"]`) || card.querySelector('[data-add-items]')).focus({preventScroll: true});
+    });
+    form.addEventListener('submitted', () => updateOrderCard());
+    document.querySelector('[data-back-to-items]')?.addEventListener('click', event => {
+      event.preventDefault(); saveDraft(form); saveContacts(form); openSelector();
+    });
+    document.querySelector('[data-checkout-loading]')?.remove();
+    updateOrderCard();
   }
 
   function buildSelector() {
@@ -298,8 +452,8 @@
     selector.querySelector('[data-continue]').addEventListener('click', async () => {
       returnToCart = false;
       selector.close();
-      await window.flexbe_cli.events.trigger('ui_cart_open');
-      document.querySelector('.widget-cart form[data-cart] input:not([type="hidden"]):not([type="submit"])')?.focus({preventScroll: true});
+      if (isCheckout) { updateOrderCard(); checkoutForm?.querySelector('input[type="text"]')?.focus({preventScroll: true}); }
+      else goCheckout();
     });
     renderProducts();
   }
@@ -419,16 +573,18 @@
   }
 
   function updateSummary() {
+    updateOrderCard();
+    updateReview();
     if (!selector) return;
     const list = items();
     const count = list.reduce((total, item) => total + Number(item.count || 0), 0);
     const total = list.reduce((total, item) => total + Number(item.price || 0) * Number(item.count || 0), 0);
     const estimate = provisional();
-    selector.querySelector('[data-summary-total]').textContent = (estimate ? 'Предварительно от ' : '') + money.format(total);
+    selector.querySelector('[data-summary-total]').textContent = unknownMeasure() ? 'Стоимость уточним' : (estimate ? 'Предварительно ' : '') + money.format(total);
     selector.querySelector('[data-summary-count]').textContent = count ? 'В заказе: ' + count : 'Выберите вещи для заказа';
     selector.querySelector('[data-summary-estimate]').hidden = !estimate;
     selector.querySelector('[data-continue]').disabled = !count;
-    document.querySelectorAll('form[data-cart]').forEach(refreshForm);
+    if (checkoutForm) refreshForm(checkoutForm);
   }
 
   async function openSelector(event) {
@@ -452,7 +608,11 @@
     const pickupSummary = pickup?.mode === 'requested'
       ? `<p>Желаемый вывоз — ${escape(pickup.date.split('-').reverse().join('.'))}, ${escape(pickup.window)}.<br><span class="dr-help">${escape(pickup.status)}</span></p>`
       : '<p>Вывоз согласуем по телефону.</p>';
-    dialog.innerHTML = `<h2 id="dr-confirmation-title">${title}</h2><p class="dr-help">Заказ №${Number(response.lead_id)}</p><p>${escape(response.checkout.message)}</p>${pickupSummary}<p>Способ оплаты — ${escape(response.checkout.payment)}.</p><button class="dr-primary" type="button">Понятно</button>`;
+    const returns = response.checkout.return;
+    const returnSummary = returns?.mode === 'requested'
+      ? `<p>Желаемый возврат — ${escape(returns.date.split('-').reverse().join('.'))}, ${escape(returns.window)}.</p>`
+      : '<p>Возврат согласуем с менеджером.</p>';
+    dialog.innerHTML = `<h2 id="dr-confirmation-title">${title}</h2><p class="dr-help">Заказ №${Number(response.lead_id)}</p><p>${escape(response.checkout.message)}</p>${pickupSummary}${returnSummary}<p class="dr-help">Менеджер подтвердит даты и время вывоза и возврата.</p><p>Способ оплаты — ${escape(response.checkout.payment)}.</p><button class="dr-primary" type="button">Понятно</button>`;
     document.body.append(dialog);
     const prior = document.querySelector('.cart-button');
     dialog.querySelector('button').addEventListener('click', () => dialog.close());
@@ -476,22 +636,27 @@
       return typeof raw === 'string' ? JSON.stringify(result) : result;
     },
     validate(form) {
+      if (form.hasAttribute('data-cart') && !isCheckout) { goCheckout(); return false; }
       if (!form.querySelector('.dr-checkout')) return true;
       showError(form, '');
-      for (const input of form.querySelectorAll('.dr-checkout input')) {
-        if (!input.checkValidity()) { input.reportValidity(); return false; }
-      }
-      if (draftFrom(form).payment === 'online' && !options.onlineAvailable && !provisional()) {
-        showError(form, 'Онлайн-оплата временно недоступна. Выберите другой способ оплаты.');
+      saveDraft(form);
+      saveContacts(form);
+      if (!items().some(item => item.count && !item.hidden)) {
+        showError(form, 'Добавьте вещи в заказ.');
         return false;
       }
+      for (const input of form.querySelectorAll('.dr-checkout input, .dr-checkout select, .dr-checkout textarea')) {
+        if (!input.checkValidity()) { input.reportValidity(); return false; }
+      }
+      if (nativeForm && !nativeForm.validateForm()) return false;
       return true;
     },
     error: showError,
     submitted(form, response) {
       try { localStorage.removeItem(draftKey); } catch (_) {}
+      try { sessionStorage.removeItem(draftKey); } catch (_) {}
       try { sessionStorage.removeItem(contactsKey); } catch (_) {}
-      draft = initialDraft;
+      draft = JSON.parse(JSON.stringify(initialDraft));
       if (!response.pay) form.addEventListener('submitted', () => confirmation(response), {once: true});
     },
     open: openSelector,
@@ -516,22 +681,31 @@
       clearInterval(interval);
       if (!options) return;
       restoreCartImages();
-      document.querySelectorAll('form[data-cart]').forEach(enhanceForm);
+      installReview();
+      if (isCheckout) mountCheckout().catch(() => {
+        const note = document.querySelector('[data-checkout-loading]');
+        if (note) note.textContent = 'Не удалось загрузить оформление. Обновите страницу или позвоните нам.';
+      });
       cartStore().on('dispatch.druzhba-checkout', () => {
         restoreCartImages();
+        if (checkoutForm) refreshForm(checkoutForm);
         updateSummary();
+        setTimeout(updateReview, 0);
       });
       window.flexbe_cli.events.on('cart_opened.druzhba-checkout', () => document.querySelectorAll('form[data-cart]').forEach(form => {
-        restoreContacts(form);
-        refreshForm(form);
+        if (!isCheckout) updateReview();
+        if (checkoutForm) restoreContacts(checkoutForm);
       }));
       const path = location.pathname.replace(/\/$/, '');
+      if (isCheckout) window.flexbe_cli.events.on('cart_opened.druzhba-checkout-page', () => {
+        if (checkoutForm) window.flexbe_cli.events.trigger('ui_cart_close');
+      });
       if (path === '/order' || path === '/druzhba-dry-cleaning/order') {
         const heading = document.querySelector('h1');
         if (heading) {
           const launcher = document.createElement('div');
           launcher.className = 'dr-launcher';
-          launcher.innerHTML = '<button class="dr-primary" type="button">Выбрать вещи и дату вывоза</button>';
+          launcher.innerHTML = '<button class="dr-primary" type="button">Выбрать вещи</button>';
           launcher.querySelector('button').addEventListener('click', openSelector);
           const intro = heading.closest('[data-is="zone"]')?.querySelector('.text-style-subtitle');
           if (intro) {
