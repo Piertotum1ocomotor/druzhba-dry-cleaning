@@ -106,9 +106,14 @@ def build(output):
 '''
     (output / '_s/druzhba-server.js').write_text((server / 'browser.js').read_text() + preview_guard)
     version = hashlib.sha256((selector + (server / 'checkout.css').read_text()).encode()).hexdigest()[:12]
-    addition = (f'<script src="{BASE}/_s/druzhba-server.js?v={version}"></script>'
-                f'<link rel="stylesheet" href="{BASE}/_s/druzhba-checkout.css?v={version}">'
-                f'<script defer src="{BASE}/_s/druzhba-checkout.js?v={version}"></script>')
+    bootstrap = (f'import "{BASE}/_s/druzhba-server.js?v={version}";\n'
+                 f'import "{BASE}/_s/druzhba-checkout.js?v={version}";\n'
+                 'const checkoutStyles = document.createElement("link");\n'
+                 'checkoutStyles.rel = "stylesheet";\n'
+                 f'checkoutStyles.href = "{BASE}/_s/druzhba-checkout.css?v={version}";\n'
+                 'document.head.append(checkoutStyles);\n')
+    entry_url = f'{BASE}/_s/druzhba-preview-entry.mjs?v={version}'
+    (output / '_s/druzhba-preview-entry.mjs').write_text(bootstrap)
     pages = modules = 0
     for file in output.rglob('*'):
         if not file.is_file():
@@ -116,7 +121,8 @@ def build(output):
         if file.suffix == '.html':
             markup = file.read_text()
             if '</head>' in markup:
-                file.write_text(markup.replace('</head>', addition + '</head>', 1))
+                if file.relative_to(output).as_posix() in {'index.html', 'order/index.html'}:
+                    file.write_text(markup.replace('</head>', f'<script type="module" src="{entry_url}"></script></head>', 1))
                 pages += 1
         elif file.suffix in {'.js', '.mjs'} and file.name not in {'druzhba-server.js', 'druzhba-checkout.js'}:
             source = file.read_text()
@@ -131,6 +137,8 @@ def build(output):
                 source = re.sub(r'(async initCaptcha\([^)]*\)\{)', r'\1return;', source)
                 file.write_text(source)
                 modules += 1
+    core = output / '_s/build/theme/4/_core.mjs'
+    core.write_text(f'import "{entry_url}";\n' + core.read_text())
     if pages < 25 or modules < 1:
         raise ValueError('Missing expected mirrored pages or native form modules')
     print(f'Pages preview: {pages} pages, {modules} native form modules, {len(catalogue["products"])} products')
