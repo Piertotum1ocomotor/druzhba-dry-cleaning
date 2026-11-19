@@ -136,6 +136,8 @@
 .dr-order-form .form-field-title { display: block; position: static !important; padding: 0 0 7px !important; font: inherit; font-size: 15px; font-weight: 500; line-height: 1.4; color: #24292c; transform: none !important; }
 .dr-order-form .form-field-text__input,
 .dr-page .dr-field :is(input, select, textarea) { display: block; width: 100%; min-width: 0; min-height: 46px; height: auto; padding: 11px 12px !important; border: 1px solid #c8d2d7 !important; border-radius: 5px; background-color: #fff; color: #24292c; font: inherit; font-size: 16px; line-height: 1.4; box-shadow: none; }
+.dr-order-form .form-field-text__input, .dr-page .dr-field :is(input, select) { height: 48px; }
+.dr-page .dr-field input[type="date"]::-webkit-datetime-edit { padding: 0; }
 .dr-order-form .form-field-text .border { display: none; }
 .dr-page .dr-field textarea { resize: vertical; min-height: 96px; }
 .dr-page .dr-field :is(input, select):disabled { color: #879198; background-color: #f4f6f7; border-color: #e0e5e7 !important; opacity: 1; }
