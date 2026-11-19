@@ -1,6 +1,8 @@
 (() => {
   'use strict';
 
+  if (window.DruzhbaCheckout) return;
+
   const draftKey = 'druzhba_checkout_v1';
   const contactsKey = 'druzhba_checkout_contacts_v1';
   const money = new Intl.NumberFormat('ru-RU', {style: 'currency', currency: 'RUB', minimumFractionDigits: 0, maximumFractionDigits: 2});
@@ -356,7 +358,8 @@
   async function mountCheckout() {
     const holder = document.querySelector('[data-checkout-holder]');
     const form = document.querySelector('.widget-cart form[data-cart]');
-    if (!holder || !form) return;
+    if (!holder || !form || form.dataset.druzhbaCheckoutMounted) return;
+    form.dataset.druzhbaCheckoutMounted = 'true';
     // Opening once lets the native cart create its form instance and attach its existing submit hooks.
     await window.flexbe_cli.events.trigger('ui_cart_open');
     nativeForm = window.flexbe_cli.components.initComponent(form, 'init');
@@ -696,26 +699,9 @@
         if (!isCheckout) updateReview();
         if (checkoutForm) restoreContacts(checkoutForm);
       }));
-      const path = location.pathname.replace(/\/$/, '');
       if (isCheckout) window.flexbe_cli.events.on('cart_opened.druzhba-checkout-page', () => {
         if (checkoutForm) window.flexbe_cli.events.trigger('ui_cart_close');
       });
-      if (path === '/order' || path === '/druzhba-dry-cleaning/order') {
-        const heading = document.querySelector('h1');
-        if (heading) {
-          const launcher = document.createElement('div');
-          launcher.className = 'dr-launcher';
-          launcher.innerHTML = '<button class="dr-primary" type="button">Выбрать вещи</button>';
-          launcher.querySelector('button').addEventListener('click', openSelector);
-          const intro = heading.closest('[data-is="zone"]')?.querySelector('.text-style-subtitle');
-          if (intro) {
-            intro.parentElement.classList.add('dr-catalog-intro');
-            intro.insertAdjacentElement('afterend', launcher);
-          } else {
-            heading.insertAdjacentElement('afterend', launcher);
-          }
-        }
-      }
     }, 100);
     setTimeout(() => clearInterval(interval), 30000);
   }
