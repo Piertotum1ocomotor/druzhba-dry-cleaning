@@ -1,0 +1,10 @@
+dist/
+**/__pycache__/
+**/*.pyc
+**/.env
+**/.env.*
+!**/.env.example
+**/private/
+**/*.sqlite*
+**/*.db
+.DS_Store
