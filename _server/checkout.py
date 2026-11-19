@@ -70,6 +70,34 @@ def measured_price(rate, measured):
     return int((Decimal(rate) * area).quantize(Decimal('1'), rounding=ROUND_HALF_UP))
 
 
+def requested_time(raw, title):
+    date_text = raw.get('date')
+    try:
+        if not isinstance(date_text, str) or not re.fullmatch(r'\d{4}-\d{2}-\d{2}', date_text):
+            raise ValueError
+        requested = datetime.strptime(date_text, '%Y-%m-%d').date()
+    except (ValueError, TypeError):
+        raise Problem(422, f'Выберите желаемую дату {title}') from None
+    now = datetime.now(TIMEZONE)
+    if not now.date() <= requested <= now.date() + timedelta(days=90):
+        raise Problem(422, 'Выберите дату в ближайшие 90 дней')
+    window = raw.get('window')
+    if not isinstance(window, str) or window not in PICKUP_WINDOWS:
+        raise Problem(422, f'Выберите удобное время {title}')
+    if requested == now.date():
+        end_hour = {'morning': 13, 'afternoon': 16, 'late': 19, 'evening': 20, 'any': 20}[window]
+        if now.hour >= end_hour:
+            raise Problem(422, 'Этот промежуток сегодня уже прошёл. Выберите другое время или дату.')
+    return date_text, window
+
+
+def optional_text(raw, key, maximum, label):
+    value = raw.get(key, '')
+    if not isinstance(value, str) or len(value.strip()) > maximum:
+        raise Problem(422, f'Проверьте поле «{label}»')
+    return value.strip()
+
+
 def checkout_fields(raw):
     if not isinstance(raw, dict):
         raise Problem(422, 'Проверьте параметры оформления заказа')
@@ -80,33 +108,50 @@ def checkout_fields(raw):
     if not isinstance(pickup, dict) or pickup.get('mode') not in ('phone', 'requested'):
         raise Problem(422, 'Выберите, как согласовать вывоз вещей')
     fields = [field('druzhba_payment', 'Способ оплаты', PAYMENT_LABELS[method])]
+    address = optional_text(pickup, 'address', 500, 'Адрес')
+    if address:
+        # Keep the original label: persisted field labels participate in the idempotency hash.
+        fields.append(field('druzhba_address', 'Адрес вывоза', address))
+    details = raw.get('address_details', {})
+    if not isinstance(details, dict) or type(details.get('meet_outside', False)) is not bool:
+        raise Problem(422, 'Проверьте детали адреса')
+    if details.get('meet_outside'):
+        fields.append(field('druzhba_meet_outside', 'Встреча курьера', 'Встречу курьера на улице'))
+    else:
+        for key, label in [('apartment', 'Квартира / офис'), ('entrance', 'Подъезд'),
+                           ('floor', 'Этаж'), ('intercom', 'Домофон')]:
+            value = optional_text(details, key, 80, label)
+            if value:
+                fields.append(field('druzhba_' + key, label, value))
+    comment = optional_text(raw, 'comment', 1000, 'Комментарий к заказу / проходу')
+    if comment:
+        fields.append(field('druzhba_comment', 'Комментарий к заказу / проходу', comment))
+    pickup_date = None
     if pickup['mode'] == 'phone':
         fields.append(field('druzhba_pickup', 'Вывоз вещей', 'Согласовать по телефону'))
-        return fields, method
-    address = pickup.get('address')
-    if not isinstance(address, str) or not 5 <= len(address.strip()) <= 500:
-        raise Problem(422, 'Укажите адрес вывоза вещей')
-    date_text = pickup.get('date')
-    try:
-        requested = datetime.strptime(date_text, '%Y-%m-%d').date()
-    except (ValueError, TypeError):
-        raise Problem(422, 'Выберите желаемую дату вывоза') from None
-    today = datetime.now(TIMEZONE).date()
-    if not today <= requested <= today + timedelta(days=90):
-        raise Problem(422, 'Выберите дату в ближайшие 90 дней')
-    window = pickup.get('window')
-    if not isinstance(window, str) or window not in PICKUP_WINDOWS:
-        raise Problem(422, 'Выберите удобный промежуток времени')
-    if requested == today:
-        end_hour = {'morning': 13, 'afternoon': 16, 'late': 19, 'evening': 20, 'any': 20}[window]
-        if datetime.now(TIMEZONE).hour >= end_hour:
-            raise Problem(422, 'Этот промежуток сегодня уже прошёл. Выберите другое время или дату.')
-    fields.extend([
-        field('druzhba_address', 'Адрес вывоза', address.strip()),
-        field('druzhba_date', 'Желаемая дата вывоза', date_text),
-        field('druzhba_window', 'Желаемое время вывоза', PICKUP_WINDOWS[window]),
-        field('druzhba_pickup', 'Подтверждение вывоза', 'Менеджер подтвердит время вывоза'),
-    ])
+    else:
+        if len(address) < 5:
+            raise Problem(422, 'Укажите адрес вывоза вещей')
+        pickup_date, window = requested_time(pickup, 'вывоза')
+        fields.extend([
+            field('druzhba_date', 'Желаемая дата вывоза', pickup_date),
+            field('druzhba_window', 'Желаемое время вывоза', PICKUP_WINDOWS[window]),
+            field('druzhba_pickup', 'Подтверждение вывоза', 'Менеджер подтвердит время вывоза'),
+        ])
+    returns = raw.get('return', {'mode': 'phone'})
+    if not isinstance(returns, dict) or returns.get('mode') not in ('phone', 'requested'):
+        raise Problem(422, 'Выберите, как согласовать возврат вещей')
+    if returns['mode'] == 'requested':
+        date_text, window = requested_time(returns, 'возврата')
+        if pickup_date and date_text < pickup_date:
+            raise Problem(422, 'Дата возврата не может быть раньше даты вывоза')
+        fields.extend([
+            field('druzhba_return_date', 'Желаемая дата возврата', date_text),
+            field('druzhba_return_window', 'Желаемое время возврата', PICKUP_WINDOWS[window]),
+            field('druzhba_return', 'Подтверждение возврата', 'Менеджер подтвердит дату и время возврата'),
+        ])
+    elif 'return' in raw:
+        fields.append(field('druzhba_return', 'Возврат вещей', 'Согласовать с менеджером'))
     return fields, method
 
 
@@ -125,6 +170,7 @@ def catalog_options(site):
             continue
         variants = [
             {'id': variant['id'], 'name': ', '.join(variant['name']), 'price': variant['price'],
+             'quantity': variant.get('quantity'),
              'image': image_url(variant.get('images') or product.get('images')),
              **price_details(product, variant)}
             for variant in product['variants']

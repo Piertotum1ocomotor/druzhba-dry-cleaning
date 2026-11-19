@@ -16369,6 +16369,26 @@
           }
         }
       }
+    },
+    "/checkout": {
+      "cart": {
+        "name": "Заказ",
+        "quiz": false,
+        "cart": true,
+        "action": "modal",
+        "fields": {
+          "10000": {
+            "name": "Имя",
+            "type": "name",
+            "required": true
+          },
+          "10001": {
+            "name": "Телефон",
+            "type": "phone",
+            "required": true
+          }
+        }
+      }
     }
   },
   "custom": {

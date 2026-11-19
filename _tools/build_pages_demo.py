@@ -121,7 +121,7 @@ def build(output):
         if file.suffix == '.html':
             markup = file.read_text()
             if '</head>' in markup:
-                if file.relative_to(output).as_posix() in {'index.html', 'order/index.html'}:
+                if file.relative_to(output).as_posix() in {'index.html', 'order/index.html', 'checkout/index.html'}:
                     file.write_text(markup.replace('</head>', f'<script type="module" src="{entry_url}"></script></head>', 1))
                 pages += 1
         elif file.suffix in {'.js', '.mjs'} and file.name not in {'druzhba-server.js', 'druzhba-checkout.js'}:

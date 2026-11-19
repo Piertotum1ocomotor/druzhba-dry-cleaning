@@ -344,6 +344,11 @@ class Site:
                 }
             else:
                 answer['checkout']['pickup'] = {'mode': 'phone'}
+            answer['checkout']['return'] = ({
+                'mode': 'requested', 'date': fields['druzhba_return_date'],
+                'window': fields.get('druzhba_return_window', ''),
+                'status': 'Ожидает подтверждения менеджером',
+            } if fields.get('druzhba_return_date') else {'mode': 'phone'})
         return answer
 
     def get_lead(self, id_, access):
