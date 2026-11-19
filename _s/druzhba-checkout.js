@@ -499,9 +499,15 @@
 
   async function init() {
     try {
-      const response = await fetch('/api/order/catalog', {credentials: 'same-origin'});
+      const response = await fetch('/druzhba-dry-cleaning/_s/druzhba-catalog.json', {credentials: 'same-origin'});
       if (!response.ok) throw new Error('catalog');
       options = await response.json();
+      const parts = new Intl.DateTimeFormat('en-CA', {timeZone: 'Asia/Yekaterinburg', year: 'numeric', month: '2-digit', day: '2-digit'}).formatToParts(new Date());
+      const date = Object.fromEntries(parts.map(part => [part.type, part.value]));
+      options.today = `${date.year}-${date.month}-${date.day}`;
+      const maximum = new Date(options.today + 'T12:00:00Z');
+      maximum.setUTCDate(maximum.getUTCDate() + 90);
+      options.maxDate = maximum.toISOString().slice(0, 10);
     } catch (_) {
       return;
     }
