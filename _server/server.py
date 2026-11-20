@@ -274,10 +274,10 @@ class Site:
         method = None
         provisional = any(item.get('provisional') for item in items)
         if enhanced:
-            extra_fields, method = checkout.checkout_fields(body['druzhba_checkout'])
+            extra_fields, method = checkout.checkout_fields(body['druzhba_checkout'], checkout.fulfillment_for(items, self.products))
             fields.extend(extra_fields)
             if provisional:
-                fields.append(checkout.field('druzhba_estimate', 'Стоимость заказа', 'Предварительная, требуется согласование после приёмки вещей'))
+                fields.append(checkout.field('druzhba_estimate', 'Стоимость заказа', 'Предварительная, итоговую стоимость согласуем до начала чистки' if checkout.fulfillment_for(items, self.products) != 'pickup' else 'Предварительная, требуется согласование после приёмки вещей'))
         tracking=body.get('utmData')
         if isinstance(tracking,str):
             try: tracking=json.loads(tracking)
@@ -332,9 +332,17 @@ class Site:
                 message = f'Стоимость предварительная. Менеджер согласует итоговую сумму {detail}. Выбранный способ оплаты сохранён.'
             elif row['state'] == 'cash':
                 message = 'Заказ принят с оплатой наличными курьеру. Менеджер подтвердит детали вывоза.'
+            fulfillment = {'Выезд мастера': 'visit', 'Выезд мастера и доставка': 'mixed'}.get(fields.get('druzhba_fulfillment'), 'pickup')
+            if fulfillment == 'visit':
+                message = 'Менеджер свяжется с вами и подтвердит детали выезда мастера. Мебель почистим на месте.'
+            elif fulfillment == 'mixed':
+                message = 'Менеджер отдельно согласует выезд мастера для мебели, вывоз и возврат остальных вещей.'
+            if fulfillment != 'pickup' and row['state'] == 'deferred':
+                message = 'Стоимость предварительная. Итоговую сумму согласуем до начала чистки. ' + message
             answer['checkout'] = {
                 'state': row['state'], 'payment': fields['druzhba_payment'],
                 'message': message, 'amount': row['amount'] / 100,
+                'fulfillment': fulfillment,
             }
             if fields.get('druzhba_date'):
                 answer['checkout']['pickup'] = {

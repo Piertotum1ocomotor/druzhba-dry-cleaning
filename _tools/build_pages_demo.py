@@ -42,7 +42,10 @@ def build(output):
     (output / '_s/druzhba-catalog.json').write_text(json.dumps(catalogue, ensure_ascii=False))
 
     selector = (server / 'selector.js').read_text()
-    selector = selector.replace("fetch('/api/order/catalog'", "fetch('" + BASE + "/_s/druzhba-catalog.json'")
+    version = hashlib.sha256((selector + (server / 'checkout.css').read_text()
+                              + (server / 'browser.js').read_text()
+                              + json.dumps(catalogue, ensure_ascii=False)).encode()).hexdigest()[:12]
+    selector = selector.replace("fetch('/api/order/catalog'", "fetch('" + BASE + "/_s/druzhba-catalog.json?v=" + version + "'")
     selector = selector.replace('options = await response.json();', '''options = await response.json();
       const parts = new Intl.DateTimeFormat('en-CA', {timeZone: 'Asia/Yekaterinburg', year: 'numeric', month: '2-digit', day: '2-digit'}).formatToParts(new Date());
       const date = Object.fromEntries(parts.map(part => [part.type, part.value]));
@@ -105,7 +108,6 @@ def build(output):
 })();
 '''
     (output / '_s/druzhba-server.js').write_text((server / 'browser.js').read_text() + preview_guard)
-    version = hashlib.sha256((selector + (server / 'checkout.css').read_text()).encode()).hexdigest()[:12]
     bootstrap = (f'import "{BASE}/_s/druzhba-server.js?v={version}";\n'
                  f'import "{BASE}/_s/druzhba-checkout.js?v={version}";\n'
                  'const checkoutStyles = document.createElement("link");\n'

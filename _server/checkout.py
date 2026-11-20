@@ -8,6 +8,7 @@ from payment import Problem
 
 TIMEZONE = ZoneInfo('Asia/Yekaterinburg')
 CARPET_CATEGORIES = {977601, 352553}
+FURNITURE_CATEGORY = 1005641
 PICKUP_WINDOWS = {
     'any': 'С 10:00 до 20:00',
     'morning': 'С 10:00 до 13:00',
@@ -24,6 +25,15 @@ PAYMENT_LABELS = {
 
 def is_carpet(product):
     return any(category['id'] in CARPET_CATEGORIES for category in product['categories'])
+
+
+def fulfillment_for(items, products):
+    # Infer service mode from already validated catalog IDs, never the submitted display label.
+    modes = []
+    for item in items:
+        product = products.get(str(item.get('productId')))
+        modes.append('visit' if product and any(category['id'] == FURNITURE_CATEGORY for category in product['categories']) else 'pickup')
+    return 'mixed' if len(set(modes)) > 1 else (modes[0] if modes else 'pickup')
 
 
 def price_details(product, variant):
@@ -98,7 +108,7 @@ def optional_text(raw, key, maximum, label):
     return value.strip()
 
 
-def checkout_fields(raw):
+def checkout_fields(raw, fulfillment="pickup"):
     if not isinstance(raw, dict):
         raise Problem(422, 'Проверьте параметры оформления заказа')
     method = raw.get('payment')
@@ -107,16 +117,24 @@ def checkout_fields(raw):
     pickup = raw.get('pickup')
     if not isinstance(pickup, dict) or pickup.get('mode') not in ('phone', 'requested'):
         raise Problem(422, 'Выберите, как согласовать вывоз вещей')
-    fields = [field('druzhba_payment', 'Способ оплаты', PAYMENT_LABELS[method])]
+    visit = fulfillment == 'visit'
+    mixed = fulfillment == 'mixed'
+    payment_label = PAYMENT_LABELS[method]
+    if method == 'cash' and (visit or mixed):
+        payment_label = 'Наличными мастеру' if visit else 'Наличными при оказании услуг'
+    fields = [field('druzhba_payment', 'Способ оплаты', payment_label)]
+    if visit or mixed:
+        fields.append(field('druzhba_fulfillment', 'Обслуживание', 'Выезд мастера' if visit else 'Выезд мастера и доставка'))
+        fields.append(field('druzhba_service_mode', 'Способ оказания услуг', 'Выезд мастера на дом' if visit else 'Выезд мастера для мебели; вывоз и возврат остальных вещей согласуем отдельно'))
     address = optional_text(pickup, 'address', 500, 'Адрес')
     if address:
         # Keep the original label: persisted field labels participate in the idempotency hash.
-        fields.append(field('druzhba_address', 'Адрес вывоза', address))
+        fields.append(field('druzhba_address', 'Адрес оказания услуг' if visit or mixed else 'Адрес вывоза', address))
     details = raw.get('address_details', {})
     if not isinstance(details, dict) or type(details.get('meet_outside', False)) is not bool:
         raise Problem(422, 'Проверьте детали адреса')
     if details.get('meet_outside'):
-        fields.append(field('druzhba_meet_outside', 'Встреча курьера', 'Встречу курьера на улице'))
+        fields.append(field('druzhba_meet_outside', 'Встреча мастера' if visit else 'Встреча мастера и курьера' if mixed else 'Встреча курьера', 'Встречу мастера на улице' if visit else 'Встречу мастера и курьера на улице' if mixed else 'Встречу курьера на улице'))
     else:
         for key, label in [('apartment', 'Квартира / офис'), ('entrance', 'Подъезд'),
                            ('floor', 'Этаж'), ('intercom', 'Домофон')]:
@@ -126,18 +144,22 @@ def checkout_fields(raw):
     comment = optional_text(raw, 'comment', 1000, 'Комментарий к заказу / проходу')
     if comment:
         fields.append(field('druzhba_comment', 'Комментарий к заказу / проходу', comment))
+    pickup_name = 'выезда мастера' if visit else 'вывоза и выезда мастера' if mixed else 'вывоза'
+    pickup_label = 'Выезд мастера' if visit else 'Вывоз вещей и выезд мастера' if mixed else 'Вывоз вещей'
     pickup_date = None
     if pickup['mode'] == 'phone':
-        fields.append(field('druzhba_pickup', 'Вывоз вещей', 'Согласовать по телефону'))
+        fields.append(field('druzhba_pickup', pickup_label, 'Согласовать отдельно по телефону' if mixed else 'Согласовать по телефону'))
     else:
         if len(address) < 5:
-            raise Problem(422, 'Укажите адрес вывоза вещей')
-        pickup_date, window = requested_time(pickup, 'вывоза')
+            raise Problem(422, 'Укажите адрес оказания услуг' if visit or mixed else 'Укажите адрес вывоза вещей')
+        pickup_date, window = requested_time(pickup, pickup_name)
         fields.extend([
-            field('druzhba_date', 'Желаемая дата вывоза', pickup_date),
-            field('druzhba_window', 'Желаемое время вывоза', PICKUP_WINDOWS[window]),
-            field('druzhba_pickup', 'Подтверждение вывоза', 'Менеджер подтвердит время вывоза'),
+            field('druzhba_date', 'Желаемая дата ' + pickup_name, pickup_date),
+            field('druzhba_window', 'Желаемое время ' + pickup_name, PICKUP_WINDOWS[window]),
+            field('druzhba_pickup', 'Подтверждение выезда мастера' if visit else 'Подтверждение вывоза и выезда' if mixed else 'Подтверждение вывоза', 'Менеджер отдельно подтвердит время выезда мастера и вывоза вещей' if mixed else 'Менеджер подтвердит время ' + pickup_name),
         ])
+    if visit:
+        return fields, method
     returns = raw.get('return', {'mode': 'phone'})
     if not isinstance(returns, dict) or returns.get('mode') not in ('phone', 'requested'):
         raise Problem(422, 'Выберите, как согласовать возврат вещей')
@@ -184,6 +206,7 @@ def catalog_options(site):
             'id': product['id'], 'name': product['name'], 'variants': variants,
             'categories': [category['id'] for category in product['categories']],
             'carpet': is_carpet(product), 'image': image,
+            'fulfillment': 'visit' if any(category['id'] == FURNITURE_CATEGORY for category in product['categories']) else 'pickup',
         })
     used = {id_ for product in products for id_ in product['categories']}
     # The old catalogue also has a duplicate "Ковры" category.

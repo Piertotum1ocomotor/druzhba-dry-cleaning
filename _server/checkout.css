@@ -225,3 +225,134 @@
   .dr-card-title { align-items: flex-start; flex-direction: column; gap: 0; }
   .dr-order-item { gap: 8px; }
 }
+
+/* Shared service UI. Fonts are local; the native forms and cart keep their own contracts. */
+@font-face {
+  font-family: 'Commissioner';
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url(files/fonts/druzhba-commissioner-cyrillic.woff2) format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Commissioner';
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url(files/fonts/druzhba-commissioner-latin.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Raleway';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(files/fonts/druzhba-raleway-cyrillic.woff2) format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Raleway';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(files/fonts/druzhba-raleway-latin.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+body.dr-unified {
+  --dr-primary: #007ea3; --dr-hover: #006b8a; --dr-accent: #0098c3;
+  --dr-text: #24292c; --dr-muted: #667085; --dr-border: #d0d5dd;
+  --dr-soft: #f5f8fa; font-family: Commissioner, Arial, sans-serif;
+}
+.dr-unified :is(.apply-text-style, [class*="text-style-"], [class*="font-family-"]) {
+  --fontFamily: Commissioner, Arial, sans-serif;
+  --customFontFamily: Commissioner, Arial, sans-serif;
+  --customFontFamily_mobile: Commissioner, Arial, sans-serif;
+}
+.dr-unified :is(.text-style-h1, .text-style-title, .text-style-h3, .text-style-h4, .font-family-h1, .font-family-title, .font-family-h3, .font-family-h4) {
+  --fontFamily: Raleway, Arial, sans-serif; --customFontFamily: Raleway, Arial, sans-serif;
+  --customFontFamily_mobile: Raleway, Arial, sans-serif; --fontWeight: 700; --fontWeight_mobile: 700;
+}
+.dr-unified :is(.text-style-h1, .font-family-h1) { --fontSize: 56px; --fontSize_mobile: 32px; --lineHeight: 1.2; }
+.dr-unified :is(.text-style-title, .font-family-title) { --fontSize: 36px; --fontSize_mobile: 26px; --lineHeight: 1.25; }
+.dr-unified :is(.text-style-h3, .font-family-h3) { --fontSize: 24px; --fontSize_mobile: 20px; --lineHeight: 1.3; }
+.dr-unified :is(.text-style-content, .font-family-content) { --fontSize: 16px; --fontSize_mobile: 16px; --lineHeight: 1.5; }
+.dr-unified :is(.component-button, .dr-primary, .dr-secondary, .dr-cart-link) { font-family: Commissioner, Arial, sans-serif; border-radius: 8px; }
+.dr-unified .component-button { --buttonRadius: 8px; min-height: 48px; }
+.dr-unified :is(.button-1, .form-submit) .component-button { color: #fff; }
+.dr-unified :is(.button-1, .form-submit) .component-button :is(.bg-fill, .bg-fill-hover) { background-color: var(--dr-primary) !important; border-radius: 8px; }
+.dr-unified :is(.button-1, .form-submit) .component-button:hover :is(.bg-fill, .bg-fill-hover) { background-color: var(--dr-hover) !important; }
+.dr-unified :is(.component-button, .dr-primary) .btn-text { font-family: Commissioner, Arial, sans-serif; font-size: 16px; line-height: 1.5; font-weight: 500; }
+.dr-unified :is(.dr-primary, .dr-order-card .form-button) { background: var(--dr-primary); border-radius: 8px; }
+.dr-unified .dr-primary:hover { background: var(--dr-hover); }
+.dr-unified .dr-primary:disabled { background: #e4e7e5; color: #626b66; }
+.dr-unified :is(.dr-secondary, .dr-text-button, .dr-close, .dr-remove, .dr-checkout-nav a, .dr-comment summary) { color: var(--dr-primary); }
+.dr-unified :is(.dr-selector, .dr-confirmation, .dr-checkout-page, .dr-cart-review) { font-family: Commissioner, Arial, sans-serif; color: var(--dr-text); }
+.dr-unified :is(.dr-selector, .dr-confirmation, .dr-order-card, .dr-product) { border-radius: 12px; }
+.dr-unified :is(.dr-field input, .dr-field select, .dr-field textarea, .dr-order-form .form-field-text__input) { border-color: var(--dr-border) !important; border-radius: 8px; }
+.dr-unified :is(.dr-help, .dr-item-estimate, .dr-date-note) { color: var(--dr-muted); font-size: 14px; line-height: 1.5; }
+.dr-unified :is(.dr-page h1, .dr-page h2, .dr-product h3, .dr-dialog-header h2, .dr-confirmation h2) { font-family: Raleway, Arial, sans-serif; font-weight: 700; letter-spacing: normal; }
+.dr-unified .dr-page h1 { font-size: 56px; }
+.dr-unified .dr-page h2 { font-size: 24px; }
+.dr-unified :is(.dr-order-card, .dr-compact-summary) { background: var(--dr-soft); }
+.dr-unified .dr-order-card .dr-quantity button { min-width: 44px; height: 44px; }
+.dr-unified .dr-remove { min-height: 44px; font-size: 14px; }
+.dr-unified .dr-secondary { border-color: var(--dr-primary); }
+.dr-unified .dr-radio:has(input:checked) { border-color: var(--dr-primary); }
+.dr-unified .dr-cart-review .widget-content { box-sizing: border-box; width: min(800px, calc(100vw - 32px)) !important; max-width: 800px !important; max-height: calc(100dvh - 32px); overflow-y: auto; border-radius: 12px; padding: 24px !important; }
+.dr-unified .dr-cart-review .cart-container { box-sizing: border-box; min-width: 0; padding: 0 !important; }
+.dr-unified .dr-cart-review :is(.item-title, .cart-price, .cart-sum) { overflow-wrap: anywhere; }
+.dr-unified .dr-cart-review .item-status:is(.in-stock, .items-in-stock) { display: none !important; }
+.dr-unified .dr-cart-review .cart-checkout-summary { gap: 16px; }
+.dr-unified .dr-cart-review .cart-checkout-summary__text { min-width: 0; }
+.dr-unified .dr-cart-review .cart-checkout-summary__text p { font-family: Commissioner, Arial, sans-serif; font-size: 16px; line-height: 1.5; }
+.dr-unified .dr-cart-review :is(.count-minus, .count-plus) { min-height: 44px; min-width: 44px; }
+.dr-unified .dr-native-price { display: block; flex: 0 0 100%; margin: 0 0 8px; font: 500 18px/1.5 Commissioner, Arial, sans-serif; }
+.dr-unified .dr-cart-link { position: fixed; right: 24px; bottom: max(24px, env(safe-area-inset-bottom)); z-index: 10000; display: flex; align-items: center; justify-content: center; min-height: 48px; padding: 12px 20px; background: var(--dr-primary); color: #fff; font: 500 16px/1.5 Commissioner, Arial, sans-serif; box-shadow: 0 3px 16px #002f4930; }
+.dr-unified .dr-cart-link:hover { background: var(--dr-hover); }
+.dr-unified :is(.component-button, .dr-cart-link):focus-visible { outline: 3px solid #256fb7; outline-offset: 3px; }
+.dr-unified .m_modal .component-form { font-family: Commissioner, Arial, sans-serif; }
+.dr-unified .m_modal .form-field-title { font-family: Commissioner, Arial, sans-serif; font-size: 16px; line-height: 1.5; }
+.dr-unified .m_modal .form-field-text__input { min-height: 48px; font-family: Commissioner, Arial, sans-serif; font-size: 16px; border-radius: 8px; }
+/* This legacy consultation used freely positioned elements; normal flow prevents text/field overlap. */
+.dr-unified .modal-free12661 .modal-content { width: min(560px, calc(100vw - 32px)) !important; max-width: 100%; }
+.dr-unified .modal-free12661 .content-zone { min-height: 0 !important; height: auto !important; padding: 32px 24px !important; border-radius: 12px; }
+.dr-unified .modal-free12661 .elements-list--static { display: flex !important; flex-direction: column; gap: 16px; }
+.dr-unified .modal-free12661 .element-item--free { position: relative !important; inset: auto !important; transform: none !important; width: 100% !important; min-width: 0 !important; height: auto !important; min-height: 0 !important; margin: 0 !important; }
+.dr-unified .modal-free12661 .element-content--free { position: relative !important; inset: auto !important; transform: none !important; height: auto !important; min-height: 0 !important; width: 100% !important; }
+.dr-unified .modal-free12661 [data-id="139505247"] { display: none; }
+.dr-unified .modal-free12661 [data-id="383353024"] { order: -3; }
+.dr-unified .modal-free12661 [data-id="543810413"] { order: -2; }
+.dr-unified .modal-free12661 [data-id="624118516"] { order: -1; }
+.dr-unified .modal-free12661 .element-text { height: auto !important; font-size: 16px; line-height: 1.5; }
+.dr-unified .modal-free12661 .text-style-title { font-size: 26px; line-height: 1.25; }
+.dr-unified .modal-free12661 .component-form { width: 100%; }
+.dr-unified .modal-free12661 .form-fields { display: grid; grid-template-columns: 1fr; gap: 16px; }
+.dr-unified .modal-free12661 .form-field { width: 100%; padding: 0; margin: 0; }
+.dr-unified .modal-free12661 .form-submit { margin-top: 24px; }
+@media (max-width: 740px) {
+  .dr-unified .dr-page h1 { font-size: 32px; }
+  .dr-unified .dr-page h2 { font-size: 20px; }
+  .dr-unified .dr-cart-review .widget-content { padding: 20px 16px !important; }
+  .dr-unified .dr-cart-review .order-item { min-width: 0; }
+  .dr-unified .dr-cart-review .content-holder { min-width: 0; }
+  .dr-unified .dr-cart-review .cart-checkout-summary { flex-wrap: wrap; }
+  .dr-unified .dr-cart-link { right: 16px; bottom: max(16px, env(safe-area-inset-bottom)); }
+  .dr-unified .modal-free12661 .content-zone { padding: 40px 20px 24px !important; }
+}
+/* Override native corner variables and border layers, including outline-only legacy buttons. */
+.dr-unified .component-button {
+  --topLeftRadius: 8px; --topRightRadius: 8px; --bottomRightRadius: 8px; --bottomLeftRadius: 8px;
+  border-radius: 8px !important;
+}
+.dr-unified :is(.button-1, .form-submit) .component-button { background-color: var(--dr-primary); }
+.dr-unified :is(.button-1, .form-submit) .component-button:hover { background-color: var(--dr-hover); }
+.dr-unified :is(.button-1, .form-submit) .component-button .btn-text { color: #fff !important; }
+.dr-unified :is(.button-1, .form-submit) .component-button .bg-border { border: 0 !important; border-radius: 8px !important; }
+.dr-unified .button-2 .component-button { color: var(--dr-primary); }
+.dr-unified .button-2 .component-button .btn-text { color: var(--dr-primary) !important; }
+.dr-unified .button-2 .component-button .bg-border { border-color: var(--dr-primary) !important; border-radius: 8px !important; }
+.dr-unified .component-form {
+  --formTopLeftRadius: 8px; --formTopRightRadius: 8px; --formBottomRightRadius: 8px; --formBottomLeftRadius: 8px;
+}
+body.dr-unified :is(.dr-order-form, .m_modal .component-form) .form-field .form-field-text__input { border-radius: 8px !important; }
