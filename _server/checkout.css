@@ -356,3 +356,8 @@ body.dr-unified {
   --formTopLeftRadius: 8px; --formTopRightRadius: 8px; --formBottomRightRadius: 8px; --formBottomLeftRadius: 8px;
 }
 body.dr-unified :is(.dr-order-form, .m_modal .component-form) .form-field .form-field-text__input { border-radius: 8px !important; }
+@media (min-width: 768px) {
+  .dr-unified [data-e-id="header_contacts"] { flex-shrink: 0; min-width: max-content; }
+  .dr-unified [data-e-id="header_contacts"] .element-text-wrap { flex-shrink: 0; min-width: max-content; }
+  .dr-unified [data-e-id="header_contacts"] .element-text--contact { white-space: nowrap; }
+}
