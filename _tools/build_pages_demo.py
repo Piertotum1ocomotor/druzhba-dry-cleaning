@@ -123,9 +123,17 @@ def build(output):
         if file.suffix == '.html':
             markup = file.read_text()
             if '</head>' in markup:
+                # Keep a public review copy out of search results. Production
+                # canonical URLs are retained; share images must load from Pages.
+                markup = re.sub(r'<meta\s+name="robots"[^>]*>', '', markup)
+                markup = markup.replace('</head>', '<meta name="robots" content="noindex,follow"></head>', 1)
+                markup = re.sub(r'(<meta\s+(?:property|name)="(?:og:url|og:image|twitter:image)"\s+content=")https://xn--80aaclkjaqq8bhmrs6a\.xn--p1ai',
+                                r'\1https://piertotum1ocomotor.github.io' + BASE, markup)
+                markup = re.sub(r'(_s/build/theme/4/_core\.mjs)\?[^"\s<>]+', rf'\1?v={version}', markup)
                 if file.relative_to(output).as_posix() in {'index.html', 'order/index.html', 'checkout/index.html'}:
-                    markup = re.sub(r'(_s/build/theme/4/_core\.mjs)\?[^"\s<>]+', rf'\1?v={version}', markup)
                     file.write_text(markup.replace('</head>', f'<script type="module" src="{entry_url}"></script></head>', 1))
+                else:
+                    file.write_text(markup)
                 pages += 1
         elif file.suffix in {'.js', '.mjs'} and file.name not in {'druzhba-server.js', 'druzhba-checkout.js'}:
             source = file.read_text()

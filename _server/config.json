@@ -34,6 +34,11 @@
           "code": 301,
           "source": "/cleaning/",
           "destination": "/himchistka-mebeli/"
+        },
+        {
+          "source": "/outerwear/himchistka-zimney-kurtki/",
+          "destination": "/outerwear/himchistka-uteplennoy-kurtki/",
+          "code": 301
         }
       ]
     },
@@ -173,7 +178,7 @@
           {
             "id": 51101363,
             "url": null,
-            "ext": "png",
+            "ext": "webp",
             "average": "#000000",
             "width": 1536,
             "height": 1024,
@@ -237,7 +242,7 @@
           {
             "id": 52178283,
             "url": null,
-            "ext": "png",
+            "ext": "webp",
             "average": "#000000",
             "width": 1024,
             "height": 1536,
@@ -297,7 +302,7 @@
           {
             "id": 52179037,
             "url": null,
-            "ext": "png",
+            "ext": "webp",
             "average": "#000000",
             "width": 1640,
             "height": 2048,
@@ -357,7 +362,7 @@
           {
             "id": 52307435,
             "url": null,
-            "ext": "png",
+            "ext": "webp",
             "average": "#000000",
             "width": 1117,
             "height": 1117,
@@ -417,7 +422,7 @@
           {
             "id": 52307411,
             "url": null,
-            "ext": "png",
+            "ext": "webp",
             "average": "#000000",
             "width": 1117,
             "height": 1117,
@@ -477,7 +482,7 @@
           {
             "id": 52307389,
             "url": null,
-            "ext": "png",
+            "ext": "webp",
             "average": "#000000",
             "width": 1117,
             "height": 1117,
@@ -537,7 +542,7 @@
           {
             "id": 52307359,
             "url": null,
-            "ext": "png",
+            "ext": "webp",
             "average": "#000000",
             "width": 929,
             "height": 1031,
@@ -597,7 +602,7 @@
           {
             "id": 52307337,
             "url": null,
-            "ext": "png",
+            "ext": "webp",
             "average": "#000000",
             "width": 1063,
             "height": 1005,
@@ -657,7 +662,7 @@
           {
             "id": 51183813,
             "url": null,
-            "ext": "png",
+            "ext": "webp",
             "average": "#000000",
             "width": 1536,
             "height": 1024,
@@ -717,7 +722,7 @@
           {
             "id": 51184583,
             "url": null,
-            "ext": "png",
+            "ext": "webp",
             "average": "#000000",
             "width": 1536,
             "height": 1024,
@@ -777,7 +782,7 @@
           {
             "id": 51186877,
             "url": null,
-            "ext": "png",
+            "ext": "webp",
             "average": "#000000",
             "width": 1536,
             "height": 1024,
@@ -837,7 +842,7 @@
           {
             "id": 52316197,
             "url": null,
-            "ext": "png",
+            "ext": "webp",
             "average": "#000000",
             "width": 1117,
             "height": 1117,
@@ -1215,7 +1220,7 @@
             "images": [
               {
                 "id": 52335695,
-                "ext": "png",
+                "ext": "webp",
                 "average": "#000000",
                 "width": 1000,
                 "height": 619,
@@ -1373,7 +1378,7 @@
             "images": [
               {
                 "id": 52338287,
-                "ext": "png",
+                "ext": "webp",
                 "average": "#000000",
                 "width": 1117,
                 "height": 1117,
@@ -1423,7 +1428,7 @@
             "images": [
               {
                 "id": 52333567,
-                "ext": "png",
+                "ext": "webp",
                 "average": "#000000",
                 "width": 1117,
                 "height": 1117,
@@ -1472,7 +1477,7 @@
           {
             "id": 52333567,
             "url": null,
-            "ext": "png",
+            "ext": "webp",
             "average": "#000000",
             "width": 1117,
             "height": 1117,
@@ -1560,7 +1565,7 @@
           {
             "id": 52309897,
             "url": null,
-            "ext": "png",
+            "ext": "webp",
             "average": "#000000",
             "width": 1058,
             "height": 1058,
@@ -1635,7 +1640,7 @@
             "images": [
               {
                 "id": 52309897,
-                "ext": "png",
+                "ext": "webp",
                 "average": "#000000",
                 "width": 1058,
                 "height": 1058,
@@ -1685,7 +1690,7 @@
             "images": [
               {
                 "id": 52309891,
-                "ext": "png",
+                "ext": "webp",
                 "average": "#000000",
                 "width": 1275,
                 "height": 1058,
@@ -1734,7 +1739,7 @@
           {
             "id": 52310545,
             "url": null,
-            "ext": "png",
+            "ext": "webp",
             "average": "#000000",
             "width": 1117,
             "height": 1117,
@@ -1794,7 +1799,7 @@
           {
             "id": 52311645,
             "url": null,
-            "ext": "png",
+            "ext": "webp",
             "average": "#000000",
             "width": 1024,
             "height": 1024,
@@ -1854,7 +1859,7 @@
           {
             "id": 52311473,
             "url": null,
-            "ext": "png",
+            "ext": "webp",
             "average": "#000000",
             "width": 978,
             "height": 978,
@@ -1914,7 +1919,7 @@
           {
             "id": 52312265,
             "url": null,
-            "ext": "png",
+            "ext": "webp",
             "average": "#000000",
             "width": 1117,
             "height": 1117,
@@ -1974,7 +1979,7 @@
           {
             "id": 52312881,
             "url": null,
-            "ext": "png",
+            "ext": "webp",
             "average": "#000000",
             "width": 2048,
             "height": 1117,
@@ -1989,7 +1994,7 @@
           {
             "id": 52313007,
             "url": null,
-            "ext": "png",
+            "ext": "webp",
             "average": "#000000",
             "width": 1117,
             "height": 1117,
@@ -2064,7 +2069,7 @@
             "images": [
               {
                 "id": 52313577,
-                "ext": "png",
+                "ext": "webp",
                 "average": "#000000",
                 "width": 1117,
                 "height": 1117,
@@ -2114,7 +2119,7 @@
             "images": [
               {
                 "id": 52313007,
-                "ext": "png",
+                "ext": "webp",
                 "average": "#000000",
                 "width": 1117,
                 "height": 1117,
@@ -2163,7 +2168,7 @@
           {
             "id": 52313401,
             "url": null,
-            "ext": "png",
+            "ext": "webp",
             "average": "#000000",
             "width": 1117,
             "height": 1117,
@@ -2223,7 +2228,7 @@
           {
             "id": 52313775,
             "url": null,
-            "ext": "png",
+            "ext": "webp",
             "average": "#000000",
             "width": 1117,
             "height": 1117,
@@ -2283,7 +2288,7 @@
           {
             "id": 52313855,
             "url": null,
-            "ext": "png",
+            "ext": "webp",
             "average": "#000000",
             "width": 1117,
             "height": 1117,
@@ -2343,7 +2348,7 @@
           {
             "id": 52313941,
             "url": null,
-            "ext": "png",
+            "ext": "webp",
             "average": "#000000",
             "width": 1117,
             "height": 1117,
@@ -2403,7 +2408,7 @@
           {
             "id": 52314025,
             "url": null,
-            "ext": "png",
+            "ext": "webp",
             "average": "#000000",
             "width": 1117,
             "height": 1117,
@@ -2463,7 +2468,7 @@
           {
             "id": 52331527,
             "url": null,
-            "ext": "png",
+            "ext": "webp",
             "average": "#000000",
             "width": 1024,
             "height": 1024,
@@ -2605,7 +2610,7 @@
           {
             "id": 52331423,
             "url": null,
-            "ext": "png",
+            "ext": "webp",
             "average": "#000000",
             "width": 1117,
             "height": 1117,
@@ -2747,7 +2752,7 @@
           {
             "id": 52331411,
             "url": null,
-            "ext": "png",
+            "ext": "webp",
             "average": "#000000",
             "width": 1024,
             "height": 1024,
@@ -2889,7 +2894,7 @@
           {
             "id": 52331543,
             "url": null,
-            "ext": "png",
+            "ext": "webp",
             "average": "#000000",
             "width": 1117,
             "height": 1117,
@@ -3031,7 +3036,7 @@
           {
             "id": 52331785,
             "url": null,
-            "ext": "png",
+            "ext": "webp",
             "average": "#000000",
             "width": 1117,
             "height": 1117,
@@ -3173,7 +3178,7 @@
           {
             "id": 52333635,
             "url": null,
-            "ext": "png",
+            "ext": "webp",
             "average": "#000000",
             "width": 1639,
             "height": 1117,
@@ -3352,7 +3357,7 @@
             "images": [
               {
                 "id": 52336395,
-                "ext": "png",
+                "ext": "webp",
                 "average": "#000000",
                 "width": 900,
                 "height": 900,
@@ -3402,7 +3407,7 @@
             "images": [
               {
                 "id": 52337339,
-                "ext": "png",
+                "ext": "webp",
                 "average": "#000000",
                 "width": 2048,
                 "height": 1117,
@@ -3537,7 +3542,7 @@
             "images": [
               {
                 "id": 52337279,
-                "ext": "png",
+                "ext": "webp",
                 "average": "#000000",
                 "width": 1000,
                 "height": 1000,
@@ -3587,7 +3592,7 @@
             "images": [
               {
                 "id": 52337321,
-                "ext": "png",
+                "ext": "webp",
                 "average": "#000000",
                 "width": 1600,
                 "height": 1067,
@@ -3637,7 +3642,7 @@
             "images": [
               {
                 "id": 52337423,
-                "ext": "png",
+                "ext": "webp",
                 "average": "#000000",
                 "width": 1000,
                 "height": 562,
@@ -3737,7 +3742,7 @@
             "images": [
               {
                 "id": 52337583,
-                "ext": "png",
+                "ext": "webp",
                 "average": "#000000",
                 "width": 1500,
                 "height": 1000,
@@ -3786,7 +3791,7 @@
           {
             "id": 52337625,
             "url": null,
-            "ext": "png",
+            "ext": "webp",
             "average": "#000000",
             "width": 1581,
             "height": 1047,
@@ -3965,7 +3970,7 @@
             "images": [
               {
                 "id": 52337819,
-                "ext": "png",
+                "ext": "webp",
                 "average": "#000000",
                 "width": 1000,
                 "height": 700,
@@ -4015,7 +4020,7 @@
             "images": [
               {
                 "id": 52337891,
-                "ext": "png",
+                "ext": "webp",
                 "average": "#000000",
                 "width": 600,
                 "height": 600,
@@ -4064,7 +4069,7 @@
           {
             "id": 52338637,
             "url": null,
-            "ext": "png",
+            "ext": "webp",
             "average": "#000000",
             "width": 1117,
             "height": 1117,
@@ -4206,7 +4211,7 @@
           {
             "id": 52338535,
             "url": null,
-            "ext": "png",
+            "ext": "webp",
             "average": "#000000",
             "width": 1117,
             "height": 1117,
@@ -4325,7 +4330,7 @@
             "images": [
               {
                 "id": 52339005,
-                "ext": "png",
+                "ext": "webp",
                 "average": "#000000",
                 "width": 1117,
                 "height": 1117,
@@ -4375,7 +4380,7 @@
             "images": [
               {
                 "id": 52338845,
-                "ext": "png",
+                "ext": "webp",
                 "average": "#000000",
                 "width": 1117,
                 "height": 1117,
@@ -4483,7 +4488,7 @@
             "images": [
               {
                 "id": 52339073,
-                "ext": "png",
+                "ext": "webp",
                 "average": "#000000",
                 "width": 1117,
                 "height": 1117,
@@ -4533,7 +4538,7 @@
             "images": [
               {
                 "id": 52350859,
-                "ext": "png",
+                "ext": "webp",
                 "average": "#000000",
                 "width": 1117,
                 "height": 1117,
@@ -4582,7 +4587,7 @@
           {
             "id": 52351061,
             "url": null,
-            "ext": "png",
+            "ext": "webp",
             "average": "#000000",
             "width": 1117,
             "height": 1117,
@@ -4724,7 +4729,7 @@
           {
             "id": 52353119,
             "url": null,
-            "ext": "png",
+            "ext": "webp",
             "average": "#000000",
             "width": 1117,
             "height": 1117,
@@ -4784,7 +4789,7 @@
           {
             "id": 52353153,
             "url": null,
-            "ext": "png",
+            "ext": "webp",
             "average": "#000000",
             "width": 1117,
             "height": 1117,
@@ -4844,7 +4849,7 @@
           {
             "id": 52353361,
             "url": null,
-            "ext": "png",
+            "ext": "webp",
             "average": "#000000",
             "width": 1117,
             "height": 1117,
@@ -4963,7 +4968,7 @@
             "images": [
               {
                 "id": 52353499,
-                "ext": "png",
+                "ext": "webp",
                 "average": "#000000",
                 "width": 1117,
                 "height": 1117,
@@ -5013,7 +5018,7 @@
             "images": [
               {
                 "id": 52353563,
-                "ext": "png",
+                "ext": "webp",
                 "average": "#000000",
                 "width": 1117,
                 "height": 1117,
@@ -5062,7 +5067,7 @@
           {
             "id": 52354229,
             "url": null,
-            "ext": "png",
+            "ext": "webp",
             "average": "#000000",
             "width": 1117,
             "height": 1117,

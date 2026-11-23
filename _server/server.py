@@ -534,6 +534,20 @@ class HTTP(SimpleHTTPRequestHandler):
     def static(self, pathname):
         site=self.server.site
         root=self.server.www
+        route=page_route(pathname)
+        found=next((r for r in site.settings['seo']['redirects'] if r['source'].rstrip('/')==route),None)
+        if found:
+            destination=found['destination']
+            if pathname.startswith(PREFIX+'/'):
+                destination=PREFIX+destination
+            query=urlsplit(self.path).query
+            if query:
+                destination+='?'+query
+            self.send_response(301)
+            self.send_header('Location',destination)
+            self.send_header('Content-Length','0')
+            self.end_headers()
+            return
         try:
             target=(root/unquote(pathname).lstrip('/')).resolve()
         except (OSError,ValueError):
@@ -543,15 +557,6 @@ class HTTP(SimpleHTTPRequestHandler):
         if target.is_dir():
             target=target/'index.html'
         if not target.is_file():
-            # Original redirects not represented by a physical file.
-            route=page_route(pathname)
-            found=next((r for r in site.settings['seo']['redirects'] if r['source'].rstrip('/')==route),None)
-            if found:
-                self.send_response(301)
-                self.send_header('Location',found['destination'])
-                self.send_header('Content-Length','0')
-                self.end_headers()
-                return
             raise Problem(404,'Страница не найдена')
         mime=self.guess_type(str(target))
         if target.suffix=='.html':
