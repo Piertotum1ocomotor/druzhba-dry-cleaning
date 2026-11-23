@@ -226,94 +226,72 @@
   .dr-order-item { gap: 8px; }
 }
 
-/* Shared service UI. Fonts are local; the native forms and cart keep their own contracts. */
+/* Original Druzhba design: local Roboto, main/outerwear CTA palette. */
 @font-face {
-  font-family: 'Commissioner';
-  font-style: normal;
-  font-weight: 400 600;
-  font-display: swap;
-  src: url(files/fonts/druzhba-commissioner-cyrillic.woff2) format('woff2');
+  font-family: Roboto; font-style: normal; font-weight: 100 900; font-display: swap;
+  src: url(files/fonts/druzhba-roboto-cyrillic.woff2) format('woff2');
   unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
 }
 @font-face {
-  font-family: 'Commissioner';
-  font-style: normal;
-  font-weight: 400 600;
-  font-display: swap;
-  src: url(files/fonts/druzhba-commissioner-latin.woff2) format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-@font-face {
-  font-family: 'Raleway';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url(files/fonts/druzhba-raleway-cyrillic.woff2) format('woff2');
-  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
-}
-@font-face {
-  font-family: 'Raleway';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url(files/fonts/druzhba-raleway-latin.woff2) format('woff2');
+  font-family: Roboto; font-style: normal; font-weight: 100 900; font-display: swap;
+  src: url(files/fonts/druzhba-roboto-latin.woff2) format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 body.dr-unified {
-  --dr-primary: #007ea3; --dr-hover: #006b8a; --dr-accent: #0098c3;
-  --dr-text: #24292c; --dr-muted: #667085; --dr-border: #d0d5dd;
-  --dr-soft: #f5f8fa; font-family: Commissioner, Arial, sans-serif;
+  --dr-primary: #1f6f7a; --dr-hover: #46828a; --dr-accent: #0098c3;
+  --dr-text: #2b2b2b; --dr-muted: #647078; --dr-border: #c8d2d7;
+  --dr-soft: #f7fbfc; --dr-radius: 10px; --dr-field-radius: 4px; --dr-font: Roboto, Roboto-Ruble, Helvetica, Arial, sans-serif; font-family: Roboto, Roboto-Ruble, Helvetica, Arial, sans-serif;
 }
 .dr-unified :is(.apply-text-style, [class*="text-style-"], [class*="font-family-"]) {
-  --fontFamily: Commissioner, Arial, sans-serif;
-  --customFontFamily: Commissioner, Arial, sans-serif;
-  --customFontFamily_mobile: Commissioner, Arial, sans-serif;
+  --fontFamily: Roboto, Roboto-Ruble, Helvetica, Arial, sans-serif;
+  --customFontFamily: Roboto, Roboto-Ruble, Helvetica, Arial, sans-serif;
+  --customFontFamily_mobile: Roboto, Roboto-Ruble, Helvetica, Arial, sans-serif;
 }
 .dr-unified :is(.text-style-h1, .text-style-title, .text-style-h3, .text-style-h4, .font-family-h1, .font-family-title, .font-family-h3, .font-family-h4) {
-  --fontFamily: Raleway, Arial, sans-serif; --customFontFamily: Raleway, Arial, sans-serif;
-  --customFontFamily_mobile: Raleway, Arial, sans-serif; --fontWeight: 700; --fontWeight_mobile: 700;
+  --fontFamily: Roboto, Roboto-Ruble, Helvetica, Arial, sans-serif; --customFontFamily: Roboto, Roboto-Ruble, Helvetica, Arial, sans-serif;
+  --customFontFamily_mobile: Roboto, Roboto-Ruble, Helvetica, Arial, sans-serif; --fontWeight: 500; --fontWeight_mobile: 500;
 }
-.dr-unified :is(.text-style-h1, .font-family-h1) { --fontSize: 56px; --fontSize_mobile: 32px; --lineHeight: 1.2; }
-.dr-unified :is(.text-style-title, .font-family-title) { --fontSize: 36px; --fontSize_mobile: 26px; --lineHeight: 1.25; }
-.dr-unified :is(.text-style-h3, .font-family-h3) { --fontSize: 24px; --fontSize_mobile: 20px; --lineHeight: 1.3; }
+.dr-unified :is(.text-style-h1, .font-family-h1) { --fontSize: 72px; --fontSize_mobile: 40px; --lineHeight: 1; }
+.dr-unified :is(.text-style-title, .font-family-title) { --fontSize: 40px; --fontSize_mobile: 34px; --lineHeight: 1.2; }
+.dr-unified :is(.text-style-h3, .font-family-h3) { --fontSize: 22px; --fontSize_mobile: 22px; --lineHeight: 1.3; --fontWeight: 700; --fontWeight_mobile: 700; }
 .dr-unified :is(.text-style-content, .font-family-content) { --fontSize: 16px; --fontSize_mobile: 16px; --lineHeight: 1.5; }
-.dr-unified :is(.component-button, .dr-primary, .dr-secondary, .dr-cart-link) { font-family: Commissioner, Arial, sans-serif; border-radius: 8px; }
-.dr-unified .component-button { --buttonRadius: 8px; min-height: 48px; }
+.dr-unified :is(.component-button, .dr-primary, .dr-secondary, .dr-cart-link) { font-family: Roboto, Roboto-Ruble, Helvetica, Arial, sans-serif; border-radius: 10px; }
+.dr-unified .component-button { --buttonRadius: 10px; min-height: 48px; }
 .dr-unified :is(.button-1, .form-submit) .component-button { color: #fff; }
-.dr-unified :is(.button-1, .form-submit) .component-button :is(.bg-fill, .bg-fill-hover) { background-color: var(--dr-primary) !important; border-radius: 8px; }
+.dr-unified :is(.button-1, .form-submit) .component-button :is(.bg-fill, .bg-fill-hover) { background-color: var(--dr-primary) !important; border-radius: 10px; }
 .dr-unified :is(.button-1, .form-submit) .component-button:hover :is(.bg-fill, .bg-fill-hover) { background-color: var(--dr-hover) !important; }
-.dr-unified :is(.component-button, .dr-primary) .btn-text { font-family: Commissioner, Arial, sans-serif; font-size: 16px; line-height: 1.5; font-weight: 500; }
-.dr-unified :is(.dr-primary, .dr-order-card .form-button) { background: var(--dr-primary); border-radius: 8px; }
+.dr-unified :is(.component-button, .dr-primary) .btn-text { font-family: Roboto, Roboto-Ruble, Helvetica, Arial, sans-serif; font-size: 15px; line-height: 1.47; font-weight: 500; }
+.dr-unified :is(.dr-primary, .dr-order-card .form-button) { background: var(--dr-primary); border-radius: 10px; }
 .dr-unified .dr-primary:hover { background: var(--dr-hover); }
 .dr-unified .dr-primary:disabled { background: #e4e7e5; color: #626b66; }
 .dr-unified :is(.dr-secondary, .dr-text-button, .dr-close, .dr-remove, .dr-checkout-nav a, .dr-comment summary) { color: var(--dr-primary); }
-.dr-unified :is(.dr-selector, .dr-confirmation, .dr-checkout-page, .dr-cart-review) { font-family: Commissioner, Arial, sans-serif; color: var(--dr-text); }
-.dr-unified :is(.dr-selector, .dr-confirmation, .dr-order-card, .dr-product) { border-radius: 12px; }
-.dr-unified :is(.dr-field input, .dr-field select, .dr-field textarea, .dr-order-form .form-field-text__input) { border-color: var(--dr-border) !important; border-radius: 8px; }
+.dr-unified :is(.dr-selector, .dr-confirmation, .dr-checkout-page, .dr-cart-review) { font-family: Roboto, Roboto-Ruble, Helvetica, Arial, sans-serif; color: var(--dr-text); }
+.dr-unified :is(.dr-selector, .dr-confirmation, .dr-order-card, .dr-product) { border-radius: 10px; }
+.dr-unified :is(.dr-field input, .dr-field select, .dr-field textarea, .dr-order-form .form-field-text__input) { border-color: var(--dr-border) !important; border-radius: 4px; }
 .dr-unified :is(.dr-help, .dr-item-estimate, .dr-date-note) { color: var(--dr-muted); font-size: 14px; line-height: 1.5; }
-.dr-unified :is(.dr-page h1, .dr-page h2, .dr-product h3, .dr-dialog-header h2, .dr-confirmation h2) { font-family: Raleway, Arial, sans-serif; font-weight: 700; letter-spacing: normal; }
-.dr-unified .dr-page h1 { font-size: 56px; }
+.dr-unified :is(.dr-page h1, .dr-page h2, .dr-product h3, .dr-dialog-header h2, .dr-confirmation h2) { font-family: Roboto, Roboto-Ruble, Helvetica, Arial, sans-serif; font-weight: 500; letter-spacing: normal; }
+.dr-unified .dr-page h1 { font-size: 40px; }
 .dr-unified .dr-page h2 { font-size: 24px; }
 .dr-unified :is(.dr-order-card, .dr-compact-summary) { background: var(--dr-soft); }
 .dr-unified .dr-order-card .dr-quantity button { min-width: 44px; height: 44px; }
 .dr-unified .dr-remove { min-height: 44px; font-size: 14px; }
 .dr-unified .dr-secondary { border-color: var(--dr-primary); }
 .dr-unified .dr-radio:has(input:checked) { border-color: var(--dr-primary); }
-.dr-unified .dr-cart-review .widget-content { box-sizing: border-box; width: min(800px, calc(100vw - 32px)) !important; max-width: 800px !important; max-height: calc(100dvh - 32px); overflow-y: auto; border-radius: 12px; padding: 24px !important; }
+.dr-unified .dr-cart-review .widget-content { box-sizing: border-box; width: min(800px, calc(100vw - 32px)) !important; max-width: 800px !important; max-height: calc(100dvh - 32px); overflow-y: auto; border-radius: 10px; padding: 24px !important; }
 .dr-unified .dr-cart-review .cart-container { box-sizing: border-box; min-width: 0; padding: 0 !important; }
 .dr-unified .dr-cart-review :is(.item-title, .cart-price, .cart-sum) { overflow-wrap: anywhere; }
 .dr-unified .dr-cart-review .item-status:is(.in-stock, .items-in-stock) { display: none !important; }
 .dr-unified .dr-cart-review .cart-checkout-summary { gap: 16px; }
 .dr-unified .dr-cart-review .cart-checkout-summary__text { min-width: 0; }
-.dr-unified .dr-cart-review .cart-checkout-summary__text p { font-family: Commissioner, Arial, sans-serif; font-size: 16px; line-height: 1.5; }
+.dr-unified .dr-cart-review .cart-checkout-summary__text p { font-family: Roboto, Roboto-Ruble, Helvetica, Arial, sans-serif; font-size: 16px; line-height: 1.5; }
 .dr-unified .dr-cart-review :is(.count-minus, .count-plus) { min-height: 44px; min-width: 44px; }
-.dr-unified .dr-native-price { display: block; flex: 0 0 100%; margin: 0 0 8px; font: 500 18px/1.5 Commissioner, Arial, sans-serif; }
-.dr-unified .dr-cart-link { position: fixed; right: 24px; bottom: max(24px, env(safe-area-inset-bottom)); z-index: 10000; display: flex; align-items: center; justify-content: center; min-height: 48px; padding: 12px 20px; background: var(--dr-primary); color: #fff; font: 500 16px/1.5 Commissioner, Arial, sans-serif; box-shadow: 0 3px 16px #002f4930; }
+.dr-unified .dr-native-price { display: block; flex: 0 0 100%; margin: 0 0 8px; font: 500 18px/1.5 Roboto, Roboto-Ruble, Helvetica, Arial, sans-serif; }
+.dr-unified .dr-cart-link { position: fixed; right: 24px; bottom: max(24px, env(safe-area-inset-bottom)); z-index: 10000; display: flex; align-items: center; justify-content: center; min-height: 48px; padding: 12px 20px; background: var(--dr-primary); color: #fff; font: 500 16px/1.5 Roboto, Roboto-Ruble, Helvetica, Arial, sans-serif; box-shadow: 0 3px 16px #002f4930; }
 .dr-unified .dr-cart-link:hover { background: var(--dr-hover); }
 .dr-unified :is(.component-button, .dr-cart-link):focus-visible { outline: 3px solid #256fb7; outline-offset: 3px; }
-.dr-unified .m_modal .component-form { font-family: Commissioner, Arial, sans-serif; }
-.dr-unified .m_modal .form-field-title { font-family: Commissioner, Arial, sans-serif; font-size: 16px; line-height: 1.5; }
-.dr-unified .m_modal .form-field-text__input { min-height: 48px; font-family: Commissioner, Arial, sans-serif; font-size: 16px; border-radius: 8px; }
+.dr-unified .m_modal .component-form { font-family: Roboto, Roboto-Ruble, Helvetica, Arial, sans-serif; }
+.dr-unified .m_modal .form-field-title { font-family: Roboto, Roboto-Ruble, Helvetica, Arial, sans-serif; font-size: 16px; line-height: 1.5; }
+.dr-unified .m_modal .form-field-text__input { min-height: 48px; font-family: Roboto, Roboto-Ruble, Helvetica, Arial, sans-serif; font-size: 16px; border-radius: 4px; }
 /* This legacy consultation used freely positioned elements; normal flow prevents text/field overlap. */
 .dr-unified .modal-free12661 .modal-content { width: min(560px, calc(100vw - 32px)) !important; max-width: 100%; }
 .dr-unified .modal-free12661 .content-zone { min-height: 0 !important; height: auto !important; padding: 32px 24px !important; border-radius: 12px; }
@@ -342,22 +320,207 @@ body.dr-unified {
 }
 /* Override native corner variables and border layers, including outline-only legacy buttons. */
 .dr-unified .component-button {
-  --topLeftRadius: 8px; --topRightRadius: 8px; --bottomRightRadius: 8px; --bottomLeftRadius: 8px;
-  border-radius: 8px !important;
+  --topLeftRadius: 10px; --topRightRadius: 10px; --bottomRightRadius: 10px; --bottomLeftRadius: 10px;
+  border-radius: 10px !important;
 }
 .dr-unified :is(.button-1, .form-submit) .component-button { background-color: var(--dr-primary); }
 .dr-unified :is(.button-1, .form-submit) .component-button:hover { background-color: var(--dr-hover); }
 .dr-unified :is(.button-1, .form-submit) .component-button .btn-text { color: #fff !important; }
-.dr-unified :is(.button-1, .form-submit) .component-button .bg-border { border: 0 !important; border-radius: 8px !important; }
+.dr-unified :is(.button-1, .form-submit) .component-button .bg-border { border: 0 !important; border-radius: 10px !important; }
 .dr-unified .button-2 .component-button { color: var(--dr-primary); }
 .dr-unified .button-2 .component-button .btn-text { color: var(--dr-primary) !important; }
-.dr-unified .button-2 .component-button .bg-border { border-color: var(--dr-primary) !important; border-radius: 8px !important; }
+.dr-unified .button-2 .component-button .bg-border { border-color: var(--dr-primary) !important; border-radius: 10px !important; }
 .dr-unified .component-form {
-  --formTopLeftRadius: 8px; --formTopRightRadius: 8px; --formBottomRightRadius: 8px; --formBottomLeftRadius: 8px;
+  --formTopLeftRadius: 4px; --formTopRightRadius: 4px; --formBottomRightRadius: 4px; --formBottomLeftRadius: 4px;
 }
-body.dr-unified :is(.dr-order-form, .m_modal .component-form) .form-field .form-field-text__input { border-radius: 8px !important; }
+body.dr-unified .component-form .form-field .form-field-text__input { border-radius: 4px !important; }
 @media (min-width: 768px) {
   .dr-unified [data-e-id="header_contacts"] { flex-shrink: 0; min-width: max-content; }
   .dr-unified [data-e-id="header_contacts"] .element-text-wrap { flex-shrink: 0; min-width: max-content; }
   .dr-unified [data-e-id="header_contacts"] .element-text--contact { white-space: nowrap; }
+}
+
+/* Site-wide tokens override page-local builder variables, without moving free elements. */
+body.dr-unified { color: var(--dr-text); font-size: 16px; font-weight: 400; line-height: 1.5; }
+body.dr-unified :is(.apply-text-style, [class*="text-style-"], [class*="font-family-"]) {
+  --fontFamily: var(--dr-font) !important;
+  --customFontFamily: var(--dr-font) !important;
+  --customFontFamily_mobile: var(--dr-font) !important;
+}
+body.dr-unified :is(.text-style-h1, .text-style-title) {
+  --fontWeight: 500 !important; --fontWeight_mobile: 500 !important;
+  --letterSpacing: 0px !important; --letterSpacing_mobile: 0px !important;
+}
+body.dr-unified .text-style-h1 {
+  --fontSize: 72px !important; --fontSize_mobile: 40px !important;
+  --lineHeight: 1 !important; --lineHeight_mobile: 1.1 !important;
+  overflow-wrap: break-word;
+}
+body.dr-unified .text-style-title {
+  --fontSize: 40px !important; --fontSize_mobile: 34px !important;
+  --lineHeight: 1.2 !important; --lineHeight_mobile: 1.2 !important;
+}
+body.dr-unified :is(.text-style-h3, .text-style-h4) { --fontWeight: 700; --fontWeight_mobile: 700; }
+body.dr-unified .text-style-content { --fontSize: 16px; --fontSize_mobile: 16px; --lineHeight: 1.5; --lineHeight_mobile: 1.5; }
+body.dr-unified .component-button {
+  --topLeftRadius: 10px !important; --topRightRadius: 10px !important;
+  --bottomRightRadius: 10px !important; --bottomLeftRadius: 10px !important;
+  --fontSize: 15px !important; --fontWeight: 500 !important; --lineHeight: 1.47 !important;
+  --gapX: 22px !important; --gapY: 12px !important;
+  font-family: var(--dr-font);
+}
+body.dr-unified :is(.button-1, .form-submit) .component-button {
+  --bgColor: var(--dr-primary) !important; --hoverBgColor: var(--dr-hover) !important;
+  --currentColor: #fff !important; --currentColorHover: #fff !important;
+  --borderColor: transparent !important; --hoverBorderColor: transparent !important;
+}
+body.dr-unified .button-2 .component-button {
+  --bgColor: transparent !important; --hoverBgColor: #edf5f6 !important;
+  --borderColor: var(--dr-primary) !important; --borderWidth: 2px !important;
+  --currentColor: var(--dr-primary) !important; --currentColorHover: var(--dr-primary) !important;
+  background-color: transparent;
+}
+body.dr-unified .button-2 .component-button :is(.bg-fill, .bg-fill-hover) { background-color: transparent !important; }
+body.dr-unified .button-2 .component-button:hover { background-color: #edf5f6; }
+body.dr-unified :is(.dr-primary, .dr-secondary, .dr-cart-link) { font: 500 15px/1.47 var(--dr-font); border-radius: 10px; }
+body.dr-unified :is(.dr-radio input, .dr-check input) { accent-color: var(--dr-primary); }
+body.dr-unified :is(.dr-checkout, .dr-field, .dr-radio, .dr-check, .dr-page-intro, .dr-header-phone) { color: var(--dr-text); }
+body.dr-unified :is(.dr-categories button[aria-pressed="true"], .dr-page .dr-radio:has(input:checked)) { color: var(--dr-primary); border-color: var(--dr-primary); background-color: #edf5f6; }
+body.dr-unified .dr-categories button { border-radius: 10px; }
+body.dr-unified .dr-selector-status { color: var(--dr-primary); }
+body.dr-unified :is(.dr-field input, .dr-field select, .dr-field textarea, .dr-quantity input, .dr-order-card .dr-quantity, .dr-page .dr-radio) { border-radius: 4px; }
+body.dr-unified .dr-order-card .form-button > :is(.bg-fill, .bg-fill-hover) { background-color: var(--dr-primary) !important; border-radius: 10px; }
+body.dr-unified .dr-order-card .form-button:hover > :is(.bg-fill, .bg-fill-hover) { background-color: var(--dr-hover) !important; }
+body.dr-unified .dr-order-card .form-button:disabled > :is(.bg-fill, .bg-fill-hover) { background-color: #dfe5e8 !important; }
+body.dr-unified :is(.component-form, .cart-field-promocode) {
+  --formTopLeftRadius: 4px !important; --formTopRightRadius: 4px !important;
+  --formBottomRightRadius: 4px !important; --formBottomLeftRadius: 4px !important;
+  --fontSizeText: 16px !important; --fontSizeTitle: 15px !important;
+  --fontSizeDesc: 13px !important; --formInputTextSize: 16px !important;
+  --formInputBorderSize: 1px; --formInputBorderColor: var(--dr-border);
+  --formInputBorderColorFocus: var(--dr-primary); --formInputBorderColorHover: var(--dr-primary);
+  --linkColor: var(--dr-primary); --linkHoverColor: var(--dr-hover);
+  font-family: var(--dr-font);
+}
+body.dr-unified .component-form :is(.form-field-text__input, .dropdown-select) { font-family: var(--dr-font); font-size: 16px; }
+body.dr-unified .component-form .form-field-title { font-family: var(--dr-font); font-size: 15px; line-height: 1.4; }
+body.dr-unified .component-form :is(.form-field-description, .form-field-desc) { font-size: 13px; line-height: 1.5; }
+body.dr-unified .component-form :is(.form-field-checkbox__box, .form-field-radio__box, .policy-data-warning__box) { color: var(--dr-primary); }
+body.dr-unified :is(.component-button, .component-form input, .component-form textarea, .component-form select, .nav-menu-item > a, .dr-page a, .dr-categories button):focus-visible { outline: 3px solid var(--dr-primary); outline-offset: 3px; }
+body.dr-unified :is(.dr-page-footer a, .dr-order-card .dr-quantity button, .dr-order-card .policy-data-warning a) { color: var(--dr-primary); }
+body.dr-unified .dr-page-footer { color: #53616a; }
+body.dr-unified :is(.nav-menu, .mobile-navigation) { font-family: var(--dr-font); }
+body.dr-unified .nav-menu-item > a { font-family: var(--dr-font); font-weight: 400; }
+body.dr-unified [data-b-id="HEADER"] { --componentBgColor: #fff; }
+body.dr-unified footer[data-b-id="FOOTER"] { --componentBgColor: #d1d8db; --indent-top: 50px; --indent-bottom: 50px; }
+body.dr-unified :is(.dr-selector, .dr-confirmation, .dr-order-card, .dr-product) { border-radius: 10px; }
+body.dr-unified .zone-products__card { --topLeftRadius: 10px; --topRightRadius: 10px; --bottomRightRadius: 10px; --bottomLeftRadius: 10px; border-radius: 10px; }
+/* Only normal-flow titled sections share spacing; covers, free layouts and nested blocks keep authored geometry. */
+body.dr-unified section[data-b-id="BUNDLE"]:has(> .main-area > .container-section-title):not(:has(.element-item--free)) { --indent-top: 50px; --indent-bottom: 50px; }
+body.dr-unified .container-section-title { --sectionTitleGap: 50px; }
+body.dr-unified .container-section-footer { --sectionFooterGap: 50px; }
+body.dr-unified .modal-free12661 .text-style-title { --fontSize: 26px !important; --fontSize_mobile: 26px !important; }
+@media (max-width: 740px) {
+  body.dr-unified footer[data-b-id="FOOTER"] { --indent-top: 30px; --indent-bottom: 30px; }
+  body.dr-unified section[data-b-id="BUNDLE"]:has(> .main-area > .container-section-title):not(:has(.element-item--free)) { --indent-top: 33.3333px; --indent-bottom: 33.3333px; }
+  body.dr-unified .container-section-title { --sectionTitleGap: 30px; }
+  body.dr-unified .container-section-footer { --sectionFooterGap: 30px; }
+}
+@media (max-width: 359px) {
+  body.dr-unified .text-style-h1 { --fontSize_mobile: 36px !important; }
+  body.dr-unified .text-style-title { --fontSize_mobile: 30px !important; }
+}
+/* Disabled delivery/payment choices remain visibly unavailable even if selected. */
+body.dr-unified .dr-page .dr-radio:has(input:disabled) { color: #919b9f; background: #f6f7f8; border-color: #e7ecee; }
+
+/* noanimate pages must not wait for window.load or third-party widgets to reveal content.
+   Restore only the fade-in gate; native hidden states, tabs and modal visibility stay owned by the builder. */
+body.dr-unified.noanimate :is(
+  .b_block.wait-animation .layout-type-header,
+  .b_block.wait-animation .transition-target,
+  .b_block.wait-animation:not(.was-view) .container-fluid > *,
+  .b_block.wait-animation:not(.was-view) > *
+):not(:is(.m_modal, .m_modal *, [hidden], [hidden] *, .tab-content:not(.active), .tab-content:not(.active) *)) {
+  opacity: 1 !important;
+}
+
+/* Builder fit-to-width rules can calculate font-size directly from local LP values.
+   Fix the rendered heading scale as well as tokens; rich-text spans inherit it. */
+body.dr-unified.adaptive-desktop .text-style-h1 {
+  font: 500 72px/1 var(--dr-font) !important;
+  letter-spacing: 0 !important;
+}
+body.dr-unified.adaptive-desktop .text-style-title {
+  font: 500 40px/1.2 var(--dr-font) !important;
+  letter-spacing: 0 !important;
+}
+body.dr-unified.adaptive-mobile .text-style-h1 {
+  font: 500 40px/1.1 var(--dr-font) !important;
+  letter-spacing: 0 !important;
+}
+body.dr-unified.adaptive-mobile .text-style-title {
+  font: 500 34px/1.2 var(--dr-font) !important;
+  letter-spacing: 0 !important;
+}
+body.dr-unified :is(.text-style-h1, .text-style-title) * {
+  font-family: inherit !important;
+  font-size: inherit !important;
+  font-weight: inherit !important;
+  line-height: inherit !important;
+  letter-spacing: inherit !important;
+}
+body.dr-unified .modal-free12661 .text-style-title { font-size: 26px !important; line-height: 1.25 !important; }
+@media (max-width: 359px) {
+  body.dr-unified.adaptive-mobile .text-style-h1 { font-size: 36px !important; }
+  body.dr-unified.adaptive-mobile .text-style-title { font-size: 30px !important; }
+}
+
+/* Product CTAs may omit bg-fill; the button surface must use the same primary palette. */
+body.dr-unified :is(.button-1, .form-submit) .component-button {
+  background-color: var(--dr-primary) !important;
+}
+body.dr-unified :is(.button-1, .form-submit) .component-button:hover {
+  background-color: var(--dr-hover) !important;
+}
+body.dr-unified :is(.button-1, .form-submit) .component-button :is(.bg-fill, .bg-fill-hover) {
+  background-color: var(--dr-primary) !important;
+}
+body.dr-unified :is(.button-1, .form-submit) .component-button:hover :is(.bg-fill, .bg-fill-hover) {
+  background-color: var(--dr-hover) !important;
+}
+body.dr-unified :is(.button-1, .form-submit) .component-button .bg-border {
+  border: 0 !important;
+  border-radius: 10px !important;
+}
+body.dr-unified :is(.button-1, .form-submit) .component-button:disabled,
+body.dr-unified :is(.button-1, .form-submit) .component-button:disabled :is(.bg-fill, .bg-fill-hover) {
+  background-color: #dfe5e8 !important;
+}
+body.dr-unified :is(.button-1, .form-submit) .component-button:disabled .btn-text {
+  color: #718087 !important;
+}
+
+/* Legacy card blocks embed !important backgrounds in page-local style elements. */
+body.dr-unified .b_block .cards-zone .flexbe-card [data-e-id="button01"] .button-1 .component-button {
+  background-color: var(--dr-primary) !important;
+}
+body.dr-unified .b_block .cards-zone .flexbe-card [data-e-id="button01"] .button-1 .component-button:hover {
+  background-color: var(--dr-hover) !important;
+}
+body.dr-unified .b_block .cards-zone .flexbe-card [data-e-id="button01"] .button-1 .component-button :is(.bg-fill, .bg-fill-hover) {
+  background-color: var(--dr-primary) !important;
+}
+body.dr-unified .b_block .cards-zone .flexbe-card [data-e-id="button01"] .button-1 .component-button:hover :is(.bg-fill, .bg-fill-hover) {
+  background-color: var(--dr-hover) !important;
+}
+body.dr-unified .b_block .cards-zone .flexbe-card [data-e-id="button01"] .button-1 .component-button .bg-border {
+  border: 0 !important;
+  border-radius: 10px !important;
+}
+body.dr-unified .b_block .cards-zone .flexbe-card [data-e-id="button01"] .button-1 .component-button:disabled,
+body.dr-unified .b_block .cards-zone .flexbe-card [data-e-id="button01"] .button-1 .component-button:disabled :is(.bg-fill, .bg-fill-hover) {
+  background-color: #dfe5e8 !important;
+}
+body.dr-unified .b_block .cards-zone .flexbe-card [data-e-id="button01"] .button-1 .component-button:disabled .btn-text {
+  color: #718087 !important;
 }
