@@ -737,14 +737,7 @@
       const label = button?.querySelector('.btn-text');
       const text = label?.textContent.trim();
       if (!label || !/\d/.test(text) || !/(?:₽|руб|р\b)/i.test(text)) continue;
-      let price = button.parentElement.querySelector('.dr-native-price');
-      if (!price) {
-        price = document.createElement('span');
-        price.className = 'dr-native-price';
-        button.before(price);
-      }
-      price.textContent = text;
-      label.textContent = 'В корзину';
+      button.classList.add('dr-price-button');
     }
   }
 

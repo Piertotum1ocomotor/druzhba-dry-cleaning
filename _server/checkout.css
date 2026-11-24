@@ -285,7 +285,18 @@ body.dr-unified {
 .dr-unified .dr-cart-review .cart-checkout-summary__text { min-width: 0; }
 .dr-unified .dr-cart-review .cart-checkout-summary__text p { font-family: Roboto, Roboto-Ruble, Helvetica, Arial, sans-serif; font-size: 16px; line-height: 1.5; }
 .dr-unified .dr-cart-review :is(.count-minus, .count-plus) { min-height: 44px; min-width: 44px; }
-.dr-unified .dr-native-price { display: block; flex: 0 0 100%; margin: 0 0 8px; font: 500 18px/1.5 Roboto, Roboto-Ruble, Helvetica, Arial, sans-serif; }
+.dr-unified .component-button.dr-price-button {
+  min-height: 0 !important;
+  border-radius: 5px !important;
+  padding: 12px 22px !important;
+}
+.dr-unified .component-button.dr-price-button :is(.bg-fill, .bg-fill-hover, .bg-border) {
+  border-radius: 5px !important;
+}
+.dr-unified .component-button.dr-price-button .btn-text {
+  font-size: 15px !important;
+  line-height: 1.37 !important;
+}
 .dr-unified .dr-cart-link { position: fixed; right: 24px; bottom: max(24px, env(safe-area-inset-bottom)); z-index: 10000; display: flex; align-items: center; justify-content: center; min-height: 48px; padding: 12px 20px; background: var(--dr-primary); color: #fff; font: 500 16px/1.5 Roboto, Roboto-Ruble, Helvetica, Arial, sans-serif; box-shadow: 0 3px 16px #002f4930; }
 .dr-unified .dr-cart-link:hover { background: var(--dr-hover); }
 .dr-unified :is(.component-button, .dr-cart-link):focus-visible { outline: 3px solid #256fb7; outline-offset: 3px; }
