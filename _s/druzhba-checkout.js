@@ -16,6 +16,10 @@
   const isCheckout = locationPath().replace(/\/$/, '') === base + '/checkout';
   const pagePath = locationPath().replace(base, '').replace(/\/index\.html$/, '').replace(/\/$/, '') || '/';
   const protectedPage = /^\/(?:outerwear(?:\/|$)|himchistka-verhney-odezhdy$|carpets$|carpets_stirka$|chistka-kovrov$|himchistka-kovrov$|professionalnaya-chistka-kovrov$)/.test(pagePath);
+  const homeServiceCategories = {
+    '816823': 977601, '864695': 409298, '231664': 409299,
+    '243100564': 1005647, '343916': 1005639, '512205': 1005637, '512133': 1005641,
+  };
   let requestedService = null;
   let requestedVariant = null;
   let cartLink;
@@ -646,16 +650,32 @@
     if (checkoutForm) refreshForm(checkoutForm);
   }
 
-  async function openSelector(event) {
+  async function openSelector(event, categoryId) {
     event?.preventDefault();
     returnFocus = document.activeElement;
     returnToCart = document.body.classList.contains('is-cart-open');
     if (!options) return;
+    const category = options.categories.find(category => String(category.id) === String(categoryId));
+    if (category) {
+      activeCategory = String(category.id);
+      requestedService = null;
+      requestedVariant = null;
+      search = '';
+    }
     if (!selector) buildSelector();
+    else if (category) {
+      selector.querySelector('[data-search]').value = '';
+      for (const button of selector.querySelectorAll('[data-category]')) {
+        button.setAttribute('aria-pressed', String(button.dataset.category === activeCategory));
+      }
+      renderProducts();
+    }
+    if (category) selector.querySelector('.dr-products').scrollTop = 0;
     await window.flexbe_cli.events.trigger('ui_cart_close');
     if (!selector.open) selector.showModal();
     updateSummary();
     selector.querySelector('[data-search]').focus();
+    if (category) selector.querySelector(`[data-category="${category.id}"]`)?.scrollIntoView({block: 'nearest', inline: 'nearest'});
   }
 
   function confirmation(response) {
@@ -781,6 +801,9 @@
       addCatalogOffer(productId, anchor.dataset.drVariantId);
       return;
     }
+    const homeCategory = pagePath === '/' && cartEntry
+      ? homeServiceCategories[anchor.closest('.tab-content[data-tab-uid]')?.dataset.tabUid] : null;
+    if (homeCategory) { openSelector(null, homeCategory); return; }
     if (document.querySelector('.widget-cart') && items().some(item => item.count && !item.hidden)) window.flexbe_cli.events.trigger('ui_cart_open');
     else openSelector();
   }
@@ -813,7 +836,7 @@
     document.body?.classList.add('dr-unified');
     if (protectedPage) return;
     try {
-      const response = await fetch('/druzhba-dry-cleaning/_s/druzhba-catalog.json?v=b4212f1eab75', {credentials: 'same-origin'});
+      const response = await fetch('/druzhba-dry-cleaning/_s/druzhba-catalog.json?v=e8a7e01f8f2c', {credentials: 'same-origin'});
       if (!response.ok) throw new Error('catalog');
       options = await response.json();
       const parts = new Intl.DateTimeFormat('en-CA', {timeZone: 'Asia/Yekaterinburg', year: 'numeric', month: '2-digit', day: '2-digit'}).formatToParts(new Date());
