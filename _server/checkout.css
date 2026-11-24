@@ -451,7 +451,7 @@ body.dr-unified.adaptive-desktop .text-style-h1 {
   letter-spacing: 0 !important;
 }
 body.dr-unified.adaptive-desktop .text-style-title {
-  font: 500 40px/1.2 var(--dr-font) !important;
+  font: 500 var(--dr-section-title-size, 40px)/1.2 var(--dr-font) !important;
   letter-spacing: 0 !important;
 }
 body.dr-unified.adaptive-mobile .text-style-h1 {
@@ -459,7 +459,7 @@ body.dr-unified.adaptive-mobile .text-style-h1 {
   letter-spacing: 0 !important;
 }
 body.dr-unified.adaptive-mobile .text-style-title {
-  font: 500 34px/1.2 var(--dr-font) !important;
+  font: 500 var(--dr-section-title-size, 34px)/1.2 var(--dr-font) !important;
   letter-spacing: 0 !important;
 }
 body.dr-unified :is(.text-style-h1, .text-style-title) * {
@@ -523,4 +523,144 @@ body.dr-unified .b_block .cards-zone .flexbe-card [data-e-id="button01"] .button
 }
 body.dr-unified .b_block .cards-zone .flexbe-card [data-e-id="button01"] .button-1 .component-button:disabled .btn-text {
   color: #718087 !important;
+}
+
+/* Custom HTML follows the same tokens as the native builder components. */
+body.dr-unified { --dr-section-title-size: 40px; }
+body.dr-unified.adaptive-mobile { --dr-section-title-size: 34px; }
+body.dr-unified :is(.custom-category-filter, .custom-category-filter .filter-label, .custom-category-filter button) {
+  font-family: var(--dr-font) !important;
+}
+
+/* FAQ presentation only: preserve each accordion's grid/max-height, icons and open state. */
+body.dr-unified :is(.faq-wrapper, .faq-wrap, #druzhba-furniture-faq),
+body.dr-unified :is(.faq-wrapper, .faq-wrap, #druzhba-furniture-faq) * {
+  font-family: var(--dr-font) !important;
+}
+body.dr-unified :is(.faq-wrapper, .faq-wrap, #druzhba-furniture-faq) .faq-title {
+  font: 500 var(--dr-section-title-size)/1.2 var(--dr-font) !important;
+  letter-spacing: 0 !important;
+  color: var(--dr-text) !important;
+}
+body.dr-unified :is(.faq-wrapper, .faq-wrap, #druzhba-furniture-faq) :is(.faq-summary, .faq-question) {
+  font-size: 16px !important;
+  font-weight: 500 !important;
+  line-height: 1.5 !important;
+  color: var(--dr-text) !important;
+}
+body.dr-unified :is(.faq-wrapper, .faq-wrap, #druzhba-furniture-faq) :is(.faq-summary, .faq-question) > :not(.faq-icon) {
+  font-size: inherit !important;
+  font-weight: inherit !important;
+  line-height: inherit !important;
+}
+body.dr-unified :is(.faq-wrapper, .faq-wrap, #druzhba-furniture-faq) :is(.faq-answer, .faq-answer *) {
+  font-size: 16px !important;
+  line-height: 1.5 !important;
+  color: var(--dr-text) !important;
+}
+body.dr-unified :is(.faq-wrapper, .faq-wrap, #druzhba-furniture-faq) .faq-summary::after {
+  color: var(--dr-primary) !important;
+}
+body.dr-unified .faq-wrap .faq-icon::before,
+body.dr-unified .faq-wrap .faq-icon::after {
+  background-color: var(--dr-primary) !important;
+}
+body.dr-unified :is(.faq-wrapper, .faq-wrap, #druzhba-furniture-faq) .faq-answer a {
+  color: var(--dr-primary) !important;
+}
+body.dr-unified :is(.faq-wrapper, .faq-wrap, #druzhba-furniture-faq) :is(.faq-summary, .faq-question):focus-visible {
+  outline: 3px solid var(--dr-primary) !important;
+  outline-offset: 4px;
+}
+
+/* Calculator/game scopes include dynamically added carpets without styling unrelated .btn controls. */
+body.dr-unified #multi-calc {
+  --mc-accent: var(--dr-primary); --mc-text: var(--dr-text);
+  --mc-muted: var(--dr-muted); --mc-line: var(--dr-border);
+}
+body.dr-unified .game-shell {
+  --accent: var(--dr-primary); --accent-dark: var(--dr-hover);
+  --text: var(--dr-text); --muted: var(--dr-muted); --line: var(--dr-border);
+}
+body.dr-unified :is(#multi-calc, .game-shell),
+body.dr-unified :is(#multi-calc, .game-shell) * { font-family: var(--dr-font) !important; }
+body.dr-unified #multi-calc .multi-calc__title,
+body.dr-unified .game-shell > .head > .title {
+  font: 500 var(--dr-section-title-size)/1.2 var(--dr-font) !important;
+  letter-spacing: 0 !important;
+}
+body.dr-unified #multi-calc :is(button, .multi-calc__tg-btn),
+body.dr-unified .game-shell .btn {
+  box-sizing: border-box;
+  min-height: 48px !important;
+  border-radius: 10px !important;
+  font: 500 16px/1.5 var(--dr-font) !important;
+}
+body.dr-unified #multi-calc :is(.multi-calc__promo-btn, .multi-calc__tg-btn),
+body.dr-unified .game-shell :is(.btn-primary, #copyPromo) {
+  background: var(--dr-primary) !important;
+  color: #fff !important;
+  border: 1px solid var(--dr-primary) !important;
+  box-shadow: none !important;
+}
+body.dr-unified #multi-calc :is(.multi-calc__promo-btn, .multi-calc__tg-btn):hover,
+body.dr-unified .game-shell :is(.btn-primary, #copyPromo):hover {
+  background: var(--dr-hover) !important;
+  border-color: var(--dr-hover) !important;
+}
+body.dr-unified #multi-calc :is(.multi-calc__add-btn, .multi-calc__remove-btn, .multi-calc__promo-btn.is-reset),
+body.dr-unified .game-shell :is(.btn-secondary, #resetGame) {
+  background: #fff !important;
+  color: var(--dr-primary) !important;
+  border: 1px solid var(--dr-primary) !important;
+  box-shadow: none !important;
+}
+body.dr-unified #multi-calc :is(.multi-calc__add-btn, .multi-calc__remove-btn, .multi-calc__promo-btn.is-reset):hover,
+body.dr-unified .game-shell :is(.btn-secondary, #resetGame):hover {
+  background: #edf5f6 !important;
+  border-color: var(--dr-hover) !important;
+}
+body.dr-unified #multi-calc :is(.multi-calc__add-btn, .multi-calc__remove-btn, .multi-calc__promo-btn, .multi-calc__promo-btn.is-reset, .multi-calc__tg-btn):is(:disabled, [aria-disabled="true"]),
+body.dr-unified .game-shell :is(.btn, #copyPromo, #resetGame):is(:disabled, [aria-disabled="true"]) {
+  background: #dfe5e8 !important;
+  border-color: #dfe5e8 !important;
+  color: #718087 !important;
+  box-shadow: none !important;
+  cursor: default;
+}
+body.dr-unified #multi-calc :is(button, input, select, .multi-calc__tg-btn):focus-visible,
+body.dr-unified .game-shell .btn:focus-visible {
+  outline: 3px solid var(--dr-primary) !important;
+  outline-offset: 3px;
+}
+body.dr-unified #multi-calc :is(.multi-calc__field input:not([type]), .multi-calc__field input[type="text"], .multi-calc__field input[type="number"], .multi-calc__field select, .multi-calc__promo-input) {
+  box-sizing: border-box;
+  height: 48px !important;
+  min-height: 48px !important;
+  max-height: 48px !important;
+  border-radius: 4px !important;
+  font-size: 16px !important;
+}
+/* Contact fields only: no height rule reaches textarea, checkbox, radio, file, range or hidden. */
+body.dr-unified .component-form :is(input:not([type]), input[type="text"], input[type="tel"], input[type="email"], input[type="number"], input[type="date"], select),
+body.dr-unified .component-form .form-field-select :is(.select-outer, .dropdown-select) {
+  box-sizing: border-box !important;
+  height: 48px !important;
+  min-height: 48px !important;
+  max-height: 48px !important;
+  border-radius: 4px !important;
+  font-family: var(--dr-font) !important;
+  font-size: 16px !important;
+  line-height: 1.5 !important;
+}
+@media (max-width: 640px) {
+  body.dr-unified #multi-calc .multi-calc__promo-input {
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+}
+@media (max-width: 359px) {
+  body.dr-unified.adaptive-mobile { --dr-section-title-size: 30px; }
 }
