@@ -737,14 +737,7 @@
       const label = button?.querySelector('.btn-text');
       const text = label?.textContent.trim();
       if (!label || !/\d/.test(text) || !/(?:₽|руб|р\b)/i.test(text)) continue;
-      let price = button.parentElement.querySelector('.dr-native-price');
-      if (!price) {
-        price = document.createElement('span');
-        price.className = 'dr-native-price';
-        button.before(price);
-      }
-      price.textContent = text;
-      label.textContent = 'В корзину';
+      button.classList.add('dr-price-button');
     }
   }
 
@@ -820,7 +813,7 @@
     document.body?.classList.add('dr-unified');
     if (protectedPage) return;
     try {
-      const response = await fetch('/druzhba-dry-cleaning/_s/druzhba-catalog.json?v=beeee2251f2e', {credentials: 'same-origin'});
+      const response = await fetch('/druzhba-dry-cleaning/_s/druzhba-catalog.json?v=3b7f6dab9f7f', {credentials: 'same-origin'});
       if (!response.ok) throw new Error('catalog');
       options = await response.json();
       const parts = new Intl.DateTimeFormat('en-CA', {timeZone: 'Asia/Yekaterinburg', year: 'numeric', month: '2-digit', day: '2-digit'}).formatToParts(new Date());
