@@ -820,7 +820,7 @@
     document.body?.classList.add('dr-unified');
     if (protectedPage) return;
     try {
-      const response = await fetch('/druzhba-dry-cleaning/_s/druzhba-catalog.json?v=751c244b22d0', {credentials: 'same-origin'});
+      const response = await fetch('/druzhba-dry-cleaning/_s/druzhba-catalog.json?v=beeee2251f2e', {credentials: 'same-origin'});
       if (!response.ok) throw new Error('catalog');
       options = await response.json();
       const parts = new Intl.DateTimeFormat('en-CA', {timeZone: 'Asia/Yekaterinburg', year: 'numeric', month: '2-digit', day: '2-digit'}).formatToParts(new Date());
