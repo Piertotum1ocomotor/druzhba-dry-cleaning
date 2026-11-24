@@ -302,6 +302,9 @@ body.dr-unified {
   font-size: 15px !important;
   line-height: 1.37 !important;
 }
+body.dr-unified.adaptive-mobile #panel-816823 [data-id="711221"][data-hidden="mobile"] {
+  display: block !important;
+}
 .dr-unified .dr-cart-link { position: fixed; right: 24px; bottom: max(24px, env(safe-area-inset-bottom)); z-index: 10000; display: flex; align-items: center; justify-content: center; min-height: 48px; padding: 12px 20px; background: var(--dr-primary); color: #fff; font: 500 16px/1.5 Roboto, Roboto-Ruble, Helvetica, Arial, sans-serif; box-shadow: 0 3px 16px #002f4930; }
 .dr-unified .dr-cart-link:hover { background: var(--dr-hover); }
 .dr-unified :is(.component-button, .dr-cart-link):focus-visible { outline: 3px solid #256fb7; outline-offset: 3px; }
