@@ -331,7 +331,7 @@ class Site:
                 detail = 'после обмера' if reasons == {'measure'} else 'после приёмки вещей'
                 message = f'Стоимость предварительная. Менеджер согласует итоговую сумму {detail}. Выбранный способ оплаты сохранён.'
             elif row['state'] == 'cash':
-                message = 'Заказ принят с оплатой наличными курьеру. Менеджер подтвердит детали вывоза.'
+                message = 'Заказ принят с оплатой наличными или картой курьеру. Менеджер подтвердит детали вывоза.'
             fulfillment = {'Выезд мастера': 'visit', 'Выезд мастера и доставка': 'mixed'}.get(fields.get('druzhba_fulfillment'), 'pickup')
             if fulfillment == 'visit':
                 message = 'Менеджер свяжется с вами и подтвердит детали выезда мастера. Мебель почистим на месте.'
@@ -374,7 +374,7 @@ class Site:
             methods.append({'kind':'provider','type':'bank_card','url':action+'/tbank/'+suffix})
         selected_method = next((field['value'] for field in json.loads(row['fields']) if field['id'] == 'druzhba_payment'), None)
         if selected_method != checkout.PAYMENT_LABELS['online']:
-            methods.append({'kind':'custom','instance_id':1,'type':'cash','title':'Оплата наличными',
+            methods.append({'kind':'custom','instance_id':1,'type':'cash','title':'Наличными или картой курьеру',
                             'url':action+'/cash/'+suffix,'action':{'type':'description','text':self.settings['payments']['cash']['instructions']}})
         return {'payment':{'id':row['id'],'amount':row['amount']/100,'status':2 if row['state']=='paid' else 0},'methods':methods}
 

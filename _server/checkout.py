@@ -18,7 +18,7 @@ PICKUP_WINDOWS = {
 }
 PAYMENT_LABELS = {
     'online': 'Онлайн через Т-Банк',
-    'cash': 'Наличными курьеру',
+    'cash': 'Наличными или картой курьеру',
     'manager': 'Согласовать с менеджером',
 }
 
@@ -121,7 +121,7 @@ def checkout_fields(raw, fulfillment="pickup"):
     mixed = fulfillment == 'mixed'
     payment_label = PAYMENT_LABELS[method]
     if method == 'cash' and (visit or mixed):
-        payment_label = 'Наличными мастеру' if visit else 'Наличными при оказании услуг'
+        payment_label = 'Наличными или картой мастеру' if visit else 'Наличными или картой при оказании услуг'
     fields = [field('druzhba_payment', 'Способ оплаты', payment_label)]
     if visit or mixed:
         fields.append(field('druzhba_fulfillment', 'Обслуживание', 'Выезд мастера' if visit else 'Выезд мастера и доставка'))
