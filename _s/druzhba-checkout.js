@@ -206,6 +206,12 @@
     return items().some(item => item.count && !item.hidden && estimateReason(item) === 'measure' && !item.druzhba_dimensions);
   }
 
+  function estimateNote() {
+    return unknownMeasure()
+      ? 'Для ковров без размеров пока указан тариф за 1 м². Итоговую стоимость подтвердим после обмера.'
+      : 'Точную стоимость подтвердим с вами до начала чистки';
+  }
+
   function draftFrom(form) {
     const root = form.querySelector('.dr-checkout');
     if (!root) return null;
@@ -289,7 +295,7 @@
     text('[data-pickup-title]', visit ? 'Выезд мастера' : mixed ? 'Вывоз вещей и выезд мастера' : 'Когда забрать вещи');
     text('[data-pickup-help]', visit ? 'Без выбранной даты согласуем выезд мастера по телефону.' : mixed ? 'Укажите пожелание к дате. Выезд мастера и вывоз вещей согласуем отдельно по телефону.' : 'Без выбранной даты согласуем вывоз по телефону.');
     text('[data-meeting-label]', visit ? 'Встречу мастера на улице' : mixed ? 'Встречу мастера и курьера на улице' : 'Встречу курьера на улице');
-    text('[data-cash-label]', visit ? 'Наличными мастеру' : mixed ? 'Наличными при оказании услуг' : 'Наличными курьеру');
+    text('[data-cash-label]', visit ? 'Наличными или картой мастеру' : mixed ? 'Наличными или картой при оказании услуг' : 'Наличными или картой курьеру');
     const returns = form.querySelector('[data-return-section]');
     if (returns) returns.hidden = visit;
     for (const input of form.querySelectorAll('[data-return-requested], [data-return-date], [data-return-window]')) if (visit) { input.disabled = true; input.required = false; }
@@ -352,7 +358,7 @@
         <p class="dr-date-note">Мы свяжемся с вами и согласуем удобное время вывоза и доставки</p>
       </section>
       <section class="dr-section"><h2>Способ оплаты</h2>
-        <label class="dr-radio"><input data-payment type="radio" value="cash"><span data-cash-label>Наличными курьеру</span></label>
+        <label class="dr-radio"><input data-payment type="radio" value="cash"><span data-cash-label>Наличными или картой курьеру</span></label>
         <label class="dr-radio"><input data-payment type="radio" value="manager"><span>Согласовать с менеджером</span></label>
       </section>
       <p class="dr-error" data-checkout-error role="alert" hidden></p>`;
@@ -468,7 +474,8 @@
     reviewDialog.querySelector('[data-review-empty]').hidden = Boolean(list.length);
     reviewDialog.querySelector('[data-review-label]').textContent = provisional() ? 'Предварительная стоимость' : 'Стоимость услуг';
     const total = list.reduce((sum, item) => sum + Math.round(Number(item.price) * 100) * Number(item.count), 0) / 100;
-    reviewDialog.querySelector('[data-review-total]').textContent = unknownMeasure() ? 'Стоимость уточним' : money.format(total);
+    reviewDialog.querySelector('[data-review-total]').textContent = money.format(total);
+    reviewDialog.querySelector('[data-review-estimate]').textContent = estimateNote();
     reviewDialog.querySelector('[data-review-estimate]').hidden = !provisional();
     reviewDialog.querySelector('[data-go-checkout]').disabled = !list.length;
     const kind = fulfillment();
@@ -489,10 +496,11 @@
     card.querySelector('[data-order-items]').innerHTML = cartRows(list);
     card.querySelector('[data-order-empty]').hidden = Boolean(count);
     card.querySelector('[data-services-label]').textContent = estimate ? 'Предварительная стоимость' : 'Стоимость услуг';
-    card.querySelector('[data-services-total]').textContent = unknownMeasure() ? 'Стоимость уточним' : money.format(total);
+    card.querySelector('[data-services-total]').textContent = money.format(total);
+    card.querySelector('[data-order-estimate]').textContent = estimateNote();
     card.querySelector('[data-order-estimate]').hidden = !estimate;
     const compact = document.querySelector('[data-compact-summary]');
-    if (compact) compact.textContent = `${count ? 'Вещей: ' + count : 'Корзина пуста'} · ${unknownMeasure() ? 'стоимость уточним' : (estimate ? 'предварительно ' : 'услуги ') + money.format(total)}`;
+    if (compact) compact.textContent = `${count ? 'Вещей: ' + count : 'Корзина пуста'} · ${(estimate ? 'предварительно ' : 'услуги ') + money.format(total)}`;
     const button = card.querySelector('.form-submit .form-button');
     if (button) button.disabled = !count;
     if (nativeForm) {
@@ -553,12 +561,12 @@
     selector.innerHTML = `
       <div class="dr-dialog-header"><h2 id="dr-selector-title">Что почистить?</h2><button class="dr-close" type="button" data-close>Закрыть</button></div>
       <div class="dr-selector-controls">
-        <label class="dr-field">Найти услугу<input type="search" data-search placeholder="Например, пуховик или ковёр" autocomplete="off"></label>
+        <label class="dr-field">Найти услугу<input type="search" data-search placeholder="Что постирать?" autocomplete="off"></label>
         <div class="dr-categories" role="group" aria-label="Категории услуг"></div>
       </div>
       <div class="dr-products"></div>
       <p class="dr-selector-status" role="status" aria-live="polite"></p>
-      <div class="dr-selector-footer"><div><strong data-summary-total></strong><span data-summary-count></span><small data-summary-estimate hidden>Стоимость уточним после приёмки</small></div><button class="dr-primary" type="button" data-continue>Перейти к оформлению</button></div>`;
+      <div class="dr-selector-footer"><div><strong data-summary-total></strong><span data-summary-count></span><small data-summary-estimate hidden>Точную стоимость подтвердим с вами до начала чистки</small></div><button class="dr-primary" type="button" data-continue>Перейти к оформлению</button></div>`;
     document.body.append(selector);
     const categories = [{id: '', name: 'Все услуги'}, ...options.categories];
     for (const category of categories) {
@@ -723,7 +731,8 @@
     const count = list.reduce((total, item) => total + Number(item.count || 0), 0);
     const total = list.reduce((total, item) => total + Number(item.price || 0) * Number(item.count || 0), 0);
     const estimate = provisional();
-    selector.querySelector('[data-summary-total]').textContent = unknownMeasure() ? 'Стоимость уточним' : (estimate ? 'Предварительно ' : '') + money.format(total);
+    selector.querySelector('[data-summary-total]').textContent = (estimate ? 'Предварительно ' : '') + money.format(total);
+    selector.querySelector('[data-summary-estimate]').textContent = estimateNote();
     selector.querySelector('[data-summary-count]').textContent = count ? 'В заказе: ' + count : 'Выберите вещи для заказа';
     selector.querySelector('[data-summary-estimate]').hidden = !estimate;
     selector.querySelector('[data-continue]').disabled = !count;
@@ -954,7 +963,7 @@
     aside.append(filterElement);
     const content = document.createElement('div');
     content.className = 'dr-catalog-content';
-    content.innerHTML = '<div class="dr-catalog-search"><label for="dr-catalog-query" data-catalog-scope>Поиск в разделе</label><div class="dr-catalog-search-field"><input id="dr-catalog-query" type="search" placeholder="Название вещи или вариант" autocomplete="off"><button type="button" data-catalog-clear aria-label="Очистить поиск" hidden>×</button></div><p data-catalog-count role="status" aria-live="polite" aria-atomic="true"></p></div>';
+    content.innerHTML = '<div class="dr-catalog-search"><label for="dr-catalog-query" data-catalog-scope>Поиск в разделе</label><div class="dr-catalog-search-field"><input id="dr-catalog-query" type="search" placeholder="Что постирать?" autocomplete="off"><button type="button" data-catalog-clear aria-label="Очистить поиск" hidden>×</button></div><p data-catalog-count role="status" aria-live="polite" aria-atomic="true"></p></div>';
     const empty = document.createElement('div');
     empty.className = 'dr-catalog-empty';
     empty.hidden = true;
@@ -1055,7 +1064,7 @@
       requestAnimationFrame(() => document.getElementById('catalog')?.scrollIntoView({block: 'start'}));
     }
     try {
-      const response = await fetch('/druzhba-dry-cleaning/_s/druzhba-catalog.json?v=da710271fbb2', {credentials: 'same-origin'});
+      const response = await fetch('/druzhba-dry-cleaning/_s/druzhba-catalog.json?v=067b37087ba3', {credentials: 'same-origin'});
       if (!response.ok) throw new Error('catalog');
       options = await response.json();
       const parts = new Intl.DateTimeFormat('en-CA', {timeZone: 'Asia/Yekaterinburg', year: 'numeric', month: '2-digit', day: '2-digit'}).formatToParts(new Date());

@@ -827,7 +827,8 @@ body.dr-unified.dr-catalog-page .dr-catalog-sidebar { min-width: 0; }
 body.dr-unified.dr-catalog-page .dr-catalog-sidebar h3 { margin: 0 0 16px; font: 500 18px/1.35 var(--dr-font); }
 body.dr-unified.dr-catalog-page .dr-catalog-sidebar > .element-item { width: 100% !important; max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
 body.dr-unified.dr-catalog-page .dr-catalog-sidebar .element-content { width: 100% !important; max-width: 100% !important; }
-body.dr-unified.dr-catalog-page .dr-catalog-sidebar .custom-category-filter {
+body.dr-unified.dr-catalog-page .dr-catalog-sidebar .custom-category-filter,
+body.dr-unified.dr-catalog-page .dr-catalog-sidebar #druzhba-home-catalog-tabs .custom-category-filter {
   display: flex !important; flex-direction: column !important; gap: 6px !important;
   overflow: visible !important; margin: 0 !important; padding: 0 !important;
 }
