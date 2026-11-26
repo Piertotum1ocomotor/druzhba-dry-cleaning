@@ -15,7 +15,6 @@
   const base = locationPath().startsWith('/druzhba-dry-cleaning/') ? '/druzhba-dry-cleaning' : '';
   const isCheckout = locationPath().replace(/\/$/, '') === base + '/checkout';
   const pagePath = locationPath().replace(base, '').replace(/\/index\.html$/, '').replace(/\/$/, '') || '/';
-  const protectedPage = /^\/(?:outerwear(?:\/|$)|himchistka-verhney-odezhdy$|carpets$|carpets_stirka$|chistka-kovrov$|himchistka-kovrov$|professionalnaya-chistka-kovrov$)/.test(pagePath);
   const homeServiceCategories = {
     '816823': 977601, '864695': 409298, '231664': 409299,
     '243100564': 1005647, '343916': 1005639, '512205': 1005637, '512133': 1005641,
@@ -23,6 +22,9 @@
   let requestedService = null;
   let requestedVariant = null;
   let cartLink;
+  let reviewDialog;
+  let reviewFocus;
+  let suppressReviewFocus = false;
   let checkoutForm;
   let nativeForm;
   function locationPath() { return typeof location === 'undefined' ? '' : location.pathname; }
@@ -120,6 +122,31 @@
           changed = true;
         }
       }
+      const knownProduct = productFor(item);
+      const knownVariant = knownProduct?.variants.find(variant => variant.id === Number(item.serverVariantId || item.variantId));
+      if (knownVariant) {
+        const dimensions = item.druzhba_dimensions;
+        const validDimensions = dimensions && Number.isFinite(Number(dimensions.length)) && Number(dimensions.length) > 0
+          && Number.isFinite(Number(dimensions.width)) && Number(dimensions.width) > 0;
+        // Native cards and the selector share an identity. A measured carpet never merges with an unknown size.
+        if (!item.hidden && (!dimensions || validDimensions) && (!knownProduct.carpet || validDimensions)) {
+          const suffix = knownProduct.carpet && dimensions ? Number(dimensions.length) + 'x' + Number(dimensions.width) : 'unit';
+          const id = `druzhba_${knownProduct.id}_${knownVariant.id}_${suffix}`;
+          if (item.id !== id || item.type !== 'custom' || !item.serverProductId || !item.serverVariantId || item.productId != null || item.variantId != null) {
+            item = {...item, id, type: 'custom', serverProductId: knownProduct.id, serverVariantId: knownVariant.id,
+              quantity: knownVariant.quantity, druzhba_estimate: knownVariant.reason};
+            delete item.productId;
+            delete item.variantId;
+            changed = true;
+          }
+        }
+        const price = knownProduct.carpet && dimensions
+          ? measuredCents(knownVariant.price, dimensions) / 100 : knownVariant.price;
+        if (Number.isFinite(price) && Number(item.price) !== price) {
+          item = {...item, price, orderPrice: price};
+          changed = true;
+        }
+      }
       // Native storage serializes its unlimited Infinity quantity as JSON null.
       // Restore only known native variants from the catalog, preserving finite stock and unknown items.
       if (item.type === 'product' && item.quantity == null) {
@@ -137,7 +164,25 @@
       changed = true;
       return {...item, img};
     });
-    if (changed) cartStore().dispatch('updateList', updated);
+    const merged = [];
+    const identities = new Map();
+    for (const item of updated) {
+      const product = productFor(item);
+      const dimensions = item.druzhba_dimensions;
+      const known = !item.hidden && product?.variants.some(variant => variant.id === Number(item.serverVariantId))
+        && (!product.carpet || (Number(dimensions?.length) > 0 && Number(dimensions?.width) > 0
+          && Number.isFinite(Number(dimensions?.length)) && Number.isFinite(Number(dimensions?.width))));
+      const prior = known && identities.get(item.id);
+      if (prior) {
+        prior.count = Number(prior.count) + Number(item.count);
+        changed = true;
+      } else {
+        const copy = {...item};
+        merged.push(copy);
+        if (known) identities.set(item.id, copy);
+      }
+    }
+    if (changed) cartStore().dispatch('updateList', merged);
   }
 
   function estimateReason(item) {
@@ -333,51 +378,103 @@
     location.href = route('/checkout/');
   }
 
+  function visibleItems() {
+    return items().filter(item => item.count && !item.hidden);
+  }
+
+  function itemTitle(item) {
+    const product = productFor(item);
+    const variant = product?.variants.find(variant => variant.id === Number(item.serverVariantId || item.variantId));
+    const title = String(item.title || product?.name || 'Услуга');
+    return variant?.name && !title.toLowerCase().includes(variant.name.toLowerCase())
+      ? title + ' — ' + variant.name : title;
+  }
+
+  function cartRows(list) {
+    return list.map(item => `<li class="dr-order-item" data-item-id="${escape(item.id)}">
+      ${item.img ? `<img src="${escape(imagePath(item.img))}" alt="" width="54" height="60">` : '<span class="dr-item-placeholder" aria-hidden="true"></span>'}
+      <div class="dr-order-item-body"><strong>${escape(itemTitle(item))}</strong>${estimateReason(item) ? `<small>${estimateReason(item) === 'measure' && !item.druzhba_dimensions ? 'Тариф за м² · размер уточним' : 'Предварительная стоимость'}</small>` : ''}
+        <div class="dr-item-controls"><div class="dr-quantity"><button type="button" data-count-change="-1" aria-label="Уменьшить количество: ${escape(itemTitle(item))}">−</button><span aria-label="Количество">${Number(item.count)}</span><button type="button" data-count-change="1" aria-label="Увеличить количество: ${escape(itemTitle(item))}" ${Number(item.count) >= itemLimit(item) ? 'disabled' : ''}>+</button></div>
+        <span>${estimateReason(item) === 'measure' && !item.druzhba_dimensions ? money.format(Number(item.price)) + ' / м²' : money.format(Number(item.price) * Number(item.count))}</span></div><button class="dr-remove" type="button" data-remove-item aria-label="Удалить: ${escape(itemTitle(item))}">Удалить</button></div></li>`).join('');
+  }
+
+  function itemLimit(item) {
+    const variant = productFor(item)?.variants.find(variant => variant.id === Number(item.serverVariantId || item.variantId));
+    return typeof variant?.quantity === 'number' && variant.quantity >= 0 ? Math.min(100, variant.quantity) : 100;
+  }
+
+  function changeCartItem(event, root) {
+    const button = event.target.closest('[data-count-change], [data-remove-item]');
+    if (!button || !root.contains(button)) return;
+    const row = button.closest('[data-item-id]');
+    const list = items();
+    const item = list.find(item => String(item.id) === row.dataset.itemId);
+    if (!item) return;
+    const count = button.hasAttribute('data-remove-item') ? 0 : Number(button.dataset.countChange) < 0 ? Math.max(0, Number(item.count) - 1) : Math.min(itemLimit(item), Number(item.count) + 1);
+    cartStore().dispatch('updateList', list.filter(candidate => candidate.id !== item.id || count > 0).map(candidate => candidate.id === item.id ? {...candidate, count} : candidate));
+    const changedRow = Array.from(root.querySelectorAll('[data-item-id]')).find(row => row.dataset.itemId === String(item.id));
+    (changedRow?.querySelector(`[data-count-change="${button.dataset.countChange}"]`) || root.querySelector('[data-add-items]')).focus({preventScroll: true});
+  }
+
+  function openReview(event, returning = false) {
+    event?.preventDefault();
+    if (isCheckout || !reviewDialog) return;
+    window.flexbe_cli.events.off('ui_cart_open.cart-widget');
+    if (!returning) reviewFocus = document.activeElement;
+    updateReview();
+    if (!reviewDialog.open) reviewDialog.showModal();
+    reviewDialog.querySelector('[data-review-close]').focus({preventScroll: true});
+  }
+
   function installReview() {
-    const widget = document.querySelector('.widget-cart');
-    if (!widget || widget.querySelector('.dr-review-actions')) return;
-    widget.classList.add('dr-cart-review');
-    const actions = document.createElement('div');
-    actions.className = 'dr-review-actions';
-    actions.innerHTML = `<p class="dr-help" data-review-estimate hidden>Точную стоимость подтвердим с вами до начала чистки</p>
-      <p class="dr-help" data-review-delivery>Доставка — согласуем с вами</p><div class="dr-review-buttons"><button class="dr-secondary" type="button" data-add-items>Добавить вещи</button><button class="dr-primary" type="button" data-go-checkout>Перейти к оформлению</button></div>`;
-    widget.querySelector('.cart-container').append(actions);
-    actions.querySelector('[data-add-items]').addEventListener('click', openSelector);
-    actions.querySelector('[data-go-checkout]').addEventListener('click', goCheckout);
+    if (isCheckout || reviewDialog) return;
+    document.body.classList.add('dr-shared-cart');
+    reviewDialog = document.createElement('dialog');
+    reviewDialog.className = 'dr-selector dr-review';
+    reviewDialog.id = 'druzhba-cart-review';
+    reviewDialog.setAttribute('aria-labelledby', 'druzhba-review-title');
+    reviewDialog.innerHTML = `<div class="dr-dialog-header"><h2 id="druzhba-review-title">Ваш заказ</h2><button class="dr-close" type="button" data-review-close>Закрыть</button></div>
+      <div class="dr-review-content"><ul class="dr-order-items" data-review-items></ul><p data-review-empty>В корзине пока нет вещей. Добавьте их, чтобы продолжить.</p>
+      <div class="dr-cost-line"><span data-review-label>Стоимость услуг</span><strong data-review-total></strong></div>
+      <p class="dr-help" data-review-estimate hidden>Точную стоимость подтвердим с вами до начала чистки</p>
+      <p class="dr-help" data-review-delivery>Вывоз и доставку согласуем с вами</p></div>
+      <div class="dr-selector-footer dr-review-buttons"><button class="dr-secondary" type="button" data-add-items>Добавить вещи</button><button class="dr-primary" type="button" data-go-checkout>Перейти к оформлению</button></div>`;
+    document.body.append(reviewDialog);
+    reviewDialog.querySelector('[data-review-close]').addEventListener('click', () => reviewDialog.close());
+    reviewDialog.querySelector('[data-add-items]').addEventListener('click', openSelector);
+    reviewDialog.querySelector('[data-go-checkout]').addEventListener('click', goCheckout);
+    reviewDialog.addEventListener('click', event => {
+      if (event.target === reviewDialog) {
+        const bounds = reviewDialog.getBoundingClientRect();
+        if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) reviewDialog.close();
+      } else changeCartItem(event, reviewDialog);
+    });
+    reviewDialog.addEventListener('close', () => {
+      if (!suppressReviewFocus) (reviewFocus?.isConnected ? reviewFocus : cartLink)?.focus({preventScroll: true});
+      suppressReviewFocus = false;
+    });
+    // Native widgets have different IDs and may be absent. Their model stays shared; their review UI has one adapter.
+    window.flexbe_cli.events.trigger('ui_cart_close');
+    window.flexbe_cli.events.off('ui_cart_open.cart-widget');
+    window.flexbe_cli.events.on('ui_cart_open.druzhba-review', () => openReview());
+    window.flexbe_cli.events.on('ui_cart_close.druzhba-review', () => { if (reviewDialog.open) reviewDialog.close(); });
     updateReview();
   }
 
   function updateReview() {
-    const widget = document.querySelector('.dr-cart-review');
-    if (!widget) return;
-    refreshFulfillment(widget);
-    const estimate = provisional();
-    const label = widget.querySelector('.cart-checkout-summary__text p');
-    if (label) label.textContent = estimate ? 'Предварительная стоимость' : 'Стоимость услуг';
-    const summary = widget.querySelector('.cart-checkout-summary');
-    let total = summary?.querySelector('[data-review-total]');
-    if (summary && !total) {
-      total = document.createElement('strong');
-      total.dataset.reviewTotal = '';
-      summary.append(total);
-    }
-    if (total) total.textContent = unknownMeasure() ? 'Стоимость уточним' : money.format(items().reduce((sum, item) => sum + (item.hidden ? 0 : Number(item.price) * Number(item.count)), 0));
-    widget.querySelector('[data-review-estimate]').hidden = !estimate;
-    widget.querySelector('[data-go-checkout]').disabled = !items().some(item => item.count && !item.hidden);
-    for (const row of widget.querySelectorAll('.order-item')) {
-      const item = items().find(item => item.id === row.dataset.id);
-      if (!item || !estimateReason(item) || row.querySelector('.dr-item-estimate')) continue;
-      if (estimateReason(item) === 'measure' && !item.druzhba_dimensions) {
-        const price = row.querySelector('.cart-sum');
-        if (price) price.textContent = money.format(Number(item.price)) + ' / м²';
-        const each = row.querySelector('.cart-price');
-        if (each) each.hidden = true;
-      }
-      const note = document.createElement('small');
-      note.className = 'dr-item-estimate';
-      note.textContent = estimateReason(item) === 'measure' && !item.druzhba_dimensions ? 'Тариф за м² · размер уточним' : 'Предварительная стоимость';
-      row.querySelector('.item-title')?.append(note);
-    }
+    if (!reviewDialog) return;
+    const list = visibleItems();
+    reviewDialog.querySelector('[data-review-items]').innerHTML = cartRows(list);
+    reviewDialog.querySelector('[data-review-empty]').hidden = Boolean(list.length);
+    reviewDialog.querySelector('[data-review-label]').textContent = provisional() ? 'Предварительная стоимость' : 'Стоимость услуг';
+    const total = list.reduce((sum, item) => sum + Math.round(Number(item.price) * 100) * Number(item.count), 0) / 100;
+    reviewDialog.querySelector('[data-review-total]').textContent = unknownMeasure() ? 'Стоимость уточним' : money.format(total);
+    reviewDialog.querySelector('[data-review-estimate]').hidden = !provisional();
+    reviewDialog.querySelector('[data-go-checkout]').disabled = !list.length;
+    const kind = fulfillment();
+    reviewDialog.querySelector('[data-review-delivery]').textContent = kind === 'visit'
+      ? 'Мебель чистим на дому. Выезд мастера согласуем с вами.'
+      : kind === 'mixed' ? 'Выезд мастера для мебели, вывоз и возврат остальных вещей согласуем отдельно.' : 'Вывоз и возврат вещей согласуем с вами.';
   }
 
   function updateOrderCard() {
@@ -389,11 +486,7 @@
     const estimate = provisional();
     const card = checkoutForm.querySelector('.dr-order-card');
     if (!card) return;
-    card.querySelector('[data-order-items]').innerHTML = list.map(item => `<li class="dr-order-item" data-item-id="${escape(item.id)}">
-      ${item.img ? `<img src="${escape(imagePath(item.img))}" alt="" width="60" height="60">` : '<span class="dr-item-placeholder" aria-hidden="true"></span>'}
-      <div class="dr-order-item-body"><strong>${escape(item.title)}</strong>${estimateReason(item) ? `<small>${estimateReason(item) === 'measure' && !item.druzhba_dimensions ? 'Тариф за м² · размер уточним' : 'Предварительно'}</small>` : ''}
-        <div class="dr-item-controls"><div class="dr-quantity"><button type="button" data-count-change="-1" aria-label="Уменьшить количество: ${escape(item.title)}">−</button><span aria-label="Количество">${Number(item.count)}</span><button type="button" data-count-change="1" aria-label="Увеличить количество: ${escape(item.title)}" ${Number(item.count) >= 100 ? 'disabled' : ''}>+</button></div>
-        <span>${estimateReason(item) === 'measure' && !item.druzhba_dimensions ? money.format(Number(item.price)) + ' / м²' : money.format(Number(item.price) * Number(item.count))}</span></div><button class="dr-remove" type="button" data-remove-item>Удалить</button></div></li>`).join('');
+    card.querySelector('[data-order-items]').innerHTML = cartRows(list);
     card.querySelector('[data-order-empty]').hidden = Boolean(count);
     card.querySelector('[data-services-label]').textContent = estimate ? 'Предварительная стоимость' : 'Стоимость услуг';
     card.querySelector('[data-services-total]').textContent = unknownMeasure() ? 'Стоимость уточним' : money.format(total);
@@ -443,20 +536,7 @@
     form.append(main, card);
     holder.replaceChildren(form);
     card.querySelector('[data-add-items]').addEventListener('click', openSelector);
-    card.addEventListener('click', event => {
-      const button = event.target.closest('[data-count-change], [data-remove-item]');
-      if (!button) return;
-      const row = button.closest('[data-item-id]');
-      const list = items();
-      const item = list.find(item => item.id === row.dataset.itemId);
-      if (!item) return;
-      const count = button.hasAttribute('data-remove-item') ? 0 : Math.max(0, Math.min(100, Number(item.count) + Number(button.dataset.countChange)));
-      const next = list.filter(candidate => candidate.id !== item.id || count > 0).map(candidate => candidate.id === item.id ? {...candidate, count} : candidate);
-      cartStore().dispatch('updateList', next);
-      // Restore keyboard focus after the changed list is rendered.
-      const changedRow = Array.from(card.querySelectorAll('[data-item-id]')).find(row => row.dataset.itemId === item.id);
-      (changedRow?.querySelector(button.hasAttribute('data-remove-item') ? '[data-remove-item]' : `[data-count-change="${button.dataset.countChange}"]`) || card.querySelector('[data-add-items]')).focus({preventScroll: true});
-    });
+    card.addEventListener('click', event => changeCartItem(event, card));
     form.addEventListener('submitted', () => updateOrderCard());
     document.querySelector('[data-back-to-items]')?.addEventListener('click', event => {
       event.preventDefault(); saveDraft(form); saveContacts(form); openSelector();
@@ -507,7 +587,7 @@
     selector.addEventListener('close', async () => {
       if (returnToCart) {
         returnToCart = false;
-        await window.flexbe_cli.events.trigger('ui_cart_open');
+        openReview(null, true);
       }
       if (returnFocus?.isConnected) returnFocus.focus();
     });
@@ -653,7 +733,8 @@
   async function openSelector(event, categoryId) {
     event?.preventDefault();
     returnFocus = document.activeElement;
-    returnToCart = document.body.classList.contains('is-cart-open');
+    returnToCart = Boolean(reviewDialog?.open);
+    if (returnToCart) { suppressReviewFocus = true; reviewDialog.close(); }
     if (!options) return;
     const category = options.categories.find(category => String(category.id) === String(categoryId));
     if (category) {
@@ -717,7 +798,7 @@
       return typeof raw === 'string' ? JSON.stringify(result) : result;
     },
     validate(form) {
-      if (!protectedPage && form.hasAttribute('data-cart') && !isCheckout) { goCheckout(); return false; }
+      if (form.hasAttribute('data-cart') && !isCheckout) { goCheckout(); return false; }
       if (!form.querySelector('.dr-checkout')) return true;
       showError(form, '');
       saveDraft(form);
@@ -745,13 +826,12 @@
 
   function updateCartLink() {
     if (!cartLink) return;
-    const count = items().filter(item => item.count && !item.hidden).reduce((sum, item) => sum + Number(item.count), 0);
-    cartLink.textContent = 'Корзина · ' + count;
-    cartLink.href = route(count ? '/checkout/' : '/order/');
+    const count = visibleItems().reduce((sum, item) => sum + Number(item.count), 0);
+    cartLink.querySelector('[data-cart-count]').textContent = count;
+    cartLink.setAttribute('aria-label', `Открыть корзину. Вещей: ${count}`);
   }
 
   function normalizeServiceButtons() {
-    if (protectedPage) return;
     for (const action of document.querySelectorAll('[data-action="cart"]')) {
       const button = action.closest('[data-component="button"]');
       const label = button?.querySelector('.btn-text');
@@ -786,7 +866,10 @@
   }
 
   function handleEntry(event) {
-    if (protectedPage) return;
+    const nativeTrigger = event.target.closest?.('.cart-button, .cart-element, .cart-element-icon, .nav-header-controls--cart');
+    if (nativeTrigger && !isCheckout) {
+      event.preventDefault(); event.stopImmediatePropagation(); openReview(); return;
+    }
     const component = event.target.closest?.('[data-component="button"]');
     const anchor = event.target.closest?.('a') || component?.querySelector('a');
     if (!anchor) return;
@@ -804,18 +887,20 @@
     const homeCategory = pagePath === '/' && cartEntry
       ? homeServiceCategories[anchor.closest('.tab-content[data-tab-uid]')?.dataset.tabUid] : null;
     if (homeCategory) { openSelector(null, homeCategory); return; }
-    if (document.querySelector('.widget-cart') && items().some(item => item.count && !item.hidden)) window.flexbe_cli.events.trigger('ui_cart_open');
-    else openSelector();
+    openReview();
   }
 
   function installEntries() {
-    if (protectedPage) return;
     // Resolve the live clicked anchor: native hydration rewrites hrefs and consumes data-product.
     document.addEventListener('click', handleEntry, true);
-    if (!isCheckout && !document.querySelector('.widget-cart')) {
-      cartLink = document.createElement('a');
-      cartLink.className = 'dr-cart-link';
-      cartLink.setAttribute('aria-label', 'Открыть общую корзину');
+    if (!isCheckout) {
+      cartLink = document.createElement('button');
+      cartLink.type = 'button';
+      cartLink.className = 'dr-cart-toggle';
+      cartLink.setAttribute('aria-haspopup', 'dialog');
+      cartLink.setAttribute('aria-controls', 'druzhba-cart-review');
+      cartLink.innerHTML = '<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M4 5h3l3 16h15l3-12H8M12 26h.01M24 26h.01" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-cart-count aria-hidden="true">0</span>';
+      cartLink.addEventListener('click', openReview);
       document.body.append(cartLink);
       updateCartLink();
     }
@@ -832,9 +917,143 @@
     }
   }
 
+  function normalizeCatalogQuery(value) {
+    return String(value || '').toLowerCase().replace(/ё/g, 'е').replace(/\s+/g, ' ').trim();
+  }
+
+  function catalogMatches(product, query) {
+    const words = normalizeCatalogQuery(query).split(' ').filter(Boolean);
+    const text = normalizeCatalogQuery([product.name, ...product.variants.map(variant => variant.name)].join(' '));
+    return words.every(word => text.includes(word));
+  }
+
+  function catalogColumns(width) {
+    return Math.max(1, Math.min(4, Math.floor((width + 20) / 240)));
+  }
+
+  function installCatalog() {
+    if (!document.body.classList.contains('dr-catalog-page') || document.querySelector('.dr-catalog-shell')) return;
+    const filter = document.querySelector('.custom-category-filter');
+    const block = document.querySelector('.container-list [data-b-id="PRODUCTS"]');
+    const shell = filter?.closest('.b_block');
+    const filterElement = filter?.closest('.element-item');
+    if (!shell || !block || !filterElement) return;
+    const categories = options.categories;
+    const products = new Map(options.products.map(product => [String(product.id), product]));
+    shell.classList.add('dr-catalog-shell');
+    const header = document.createElement('header');
+    header.className = 'dr-catalog-header';
+    header.innerHTML = '<h2>Каталог</h2><p>Выберите вещи и добавьте их в корзину</p>';
+    const layout = document.createElement('div');
+    layout.className = 'dr-catalog-layout';
+    const aside = document.createElement('aside');
+    aside.className = 'dr-catalog-sidebar';
+    aside.setAttribute('aria-label', 'Разделы каталога');
+    aside.innerHTML = `<h3>Разделы</h3><label class="dr-catalog-mobile-category">Категория<select data-catalog-category>${categories.map(category => `<option value="${Number(category.id)}">${escape(category.name)}</option>`).join('')}</select></label>`;
+    // Move the existing filter with its listeners; native cards and category controls stay intact.
+    aside.append(filterElement);
+    const content = document.createElement('div');
+    content.className = 'dr-catalog-content';
+    content.innerHTML = '<div class="dr-catalog-search"><label for="dr-catalog-query" data-catalog-scope>Поиск в разделе</label><div class="dr-catalog-search-field"><input id="dr-catalog-query" type="search" placeholder="Название вещи или вариант" autocomplete="off"><button type="button" data-catalog-clear aria-label="Очистить поиск" hidden>×</button></div><p data-catalog-count role="status" aria-live="polite" aria-atomic="true"></p></div>';
+    const empty = document.createElement('div');
+    empty.className = 'dr-catalog-empty';
+    empty.hidden = true;
+    empty.innerHTML = '<p>По вашему запросу ничего не найдено</p><button type="button" data-catalog-reset>Сбросить поиск</button>';
+    content.append(block, empty);
+    layout.append(aside, content);
+    shell.append(header, layout);
+    const input = content.querySelector('input');
+    const select = aside.querySelector('select');
+    const clear = content.querySelector('[data-catalog-clear]');
+    const count = content.querySelector('[data-catalog-count]');
+    const scope = content.querySelector('[data-catalog-scope]');
+    const buttons = [...filter.querySelectorAll('.filter-btn')];
+    for (const button of buttons) {
+      button.setAttribute('role', 'button');
+      button.tabIndex = 0;
+      button.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); button.click(); }
+      });
+    }
+    let scheduled = false;
+    function refresh() {
+      scheduled = false;
+      const panel = [...block.querySelectorAll('[role="tabpanel"][data-tab-uid]')].find(panel => !panel.hidden);
+      if (!panel) return;
+      const category = categories.find(category => String(category.id) === panel.dataset.tabUid);
+      if (!category) return;
+      const query = normalizeCatalogQuery(input.value);
+      let visible = 0;
+      const cards = [...panel.querySelectorAll('[data-product-item]')];
+      for (const card of cards) {
+        const product = products.get(card.dataset.itemId);
+        const matched = !query || Boolean(product && catalogMatches(product, query));
+        card.classList.toggle('dr-search-hidden', !matched);
+        if (matched) visible++;
+      }
+      select.value = String(category.id);
+      for (const button of buttons) {
+        const active = normalizeCatalogQuery(button.querySelector('.filter-label')?.textContent) === normalizeCatalogQuery(category.name);
+        button.classList.toggle('active-filter', active);
+        button.setAttribute('aria-pressed', String(active));
+      }
+      const label = `Поиск в разделе «${category.name}»`;
+      if (scope.textContent !== label) scope.textContent = label;
+      const summary = `Найдено услуг: ${visible}`;
+      if (count.textContent !== summary) count.textContent = summary;
+      clear.hidden = !input.value;
+      empty.hidden = !query || visible > 0 || !cards.length;
+    }
+    function scheduleRefresh() {
+      if (!scheduled) { scheduled = true; requestAnimationFrame(refresh); }
+    }
+    function resetSearch() { input.value = ''; refresh(); input.focus({preventScroll: true}); }
+    input.addEventListener('input', refresh);
+    clear.addEventListener('click', resetSearch);
+    empty.querySelector('button').addEventListener('click', resetSearch);
+    filter.addEventListener('click', scheduleRefresh);
+    select.addEventListener('change', () => {
+      const category = categories.find(category => String(category.id) === select.value);
+      const native = [...block.querySelectorAll('.tab-wrap')].find(tab => normalizeCatalogQuery(tab.querySelector('.tab-label')?.textContent) === normalizeCatalogQuery(category?.name));
+      (native?.querySelector('a.tab') || native)?.click();
+      scheduleRefresh();
+    });
+    // Variant changes can rerender a native card. Filter it again without changing its selected variant.
+    new MutationObserver(scheduleRefresh).observe(block, {childList: true, subtree: true, attributes: true, attributeFilter: ['hidden', 'aria-selected']});
+    const resize = () => {
+      const zoom = Number(window.getComputedStyle(document.body).zoom);
+      const nativeZoom = Number.isFinite(zoom) && zoom > 0 ? zoom : 1;
+      const width = content.clientWidth > 0 ? content.clientWidth * nativeZoom : content.getBoundingClientRect().width;
+      const columns = String(catalogColumns(width));
+      if (content.style.getPropertyValue('--dr-catalog-columns') !== columns) content.style.setProperty('--dr-catalog-columns', columns);
+    };
+    let resizeScheduled = false;
+    const scheduleResize = () => {
+      if (resizeScheduled) return;
+      resizeScheduled = true;
+      requestAnimationFrame(() => { resizeScheduled = false; resize(); });
+    };
+    if (typeof ResizeObserver !== 'undefined') new ResizeObserver(scheduleResize).observe(content);
+    // Flexbe can zoom a fixed-width body without changing the observed content box.
+    // Read its visual width after the native responsive style/class update has settled.
+    window.addEventListener('resize', scheduleResize);
+    window.addEventListener('resized', scheduleResize);
+    new MutationObserver(scheduleResize).observe(document.body, {attributes: true, attributeFilter: ['style', 'class']});
+    // Native qn() writes --zoom on HTML; staying in desktop mode need not mutate BODY.
+    new MutationObserver(scheduleResize).observe(document.documentElement, {attributes: true, attributeFilter: ['style', 'class']});
+    resize();
+    refresh();
+  }
+
   async function init() {
     document.body?.classList.add('dr-unified');
-    if (protectedPage) return;
+    if (['/', '/order', '/techno_order'].includes(pagePath)) document.body?.classList.add('dr-catalog-page');
+    if (pagePath === '/' && location.hash === '#price') {
+      const target = new URL(location.href);
+      target.hash = 'catalog';
+      history.replaceState(history.state, '', target.href);
+      requestAnimationFrame(() => document.getElementById('catalog')?.scrollIntoView({block: 'start'}));
+    }
     try {
       const response = await fetch('/api/order/catalog', {credentials: 'same-origin'});
       if (!response.ok) throw new Error('catalog');
@@ -847,6 +1066,7 @@
       clearInterval(interval);
       if (!options) return;
       restoreCartImages();
+      installCatalog();
       installReview();
       installEntries();
       if (isCheckout) mountCheckout().catch(() => {
